@@ -3,6 +3,681 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Майская ВЭС — Сваи</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Oswald:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* --- Стили (полные) --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #e8f5e9; color: #1e2a2f; padding: 20px; font-family: 'Inter', sans-serif; min-height: 100vh; }
+        .wrapper { max-width: 1600px; margin: 0 auto; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); border-radius: 24px; padding: 25px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid rgba(46,125,50,0.3); padding-bottom: 12px; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .logo-block { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { font-size: 2.4rem; font-weight: 800; font-family: 'Oswald', sans-serif; color: #1b5e20; }
+        .logo-icon small { display: block; font-size: 0.6rem; font-family: 'Inter', sans-serif; font-weight: 300; letter-spacing: 3px; color: #2e7d32; text-transform: uppercase; margin-top: -2px; }
+        .header-title { font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700; letter-spacing: 2px; color: #1b5e20; text-transform: uppercase; }
+        .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .header .sub { font-family: 'Inter', sans-serif; font-size: 1rem; color: #2e7d32; background: rgba(200,230,201,0.7); padding: 6px 20px; border-radius: 40px; border: 1px solid rgba(46,125,50,0.2); }
+        .data-source { font-size: 0.8rem; color: #555; background: rgba(255,255,255,0.5); padding: 4px 14px; border-radius: 30px; border: 1px solid #ccc; }
+        .refresh-btn { background: rgba(46,125,50,0.15); border: 1px solid rgba(46,125,50,0.2); color: #1b5e20; padding: 6px 16px; border-radius: 40px; cursor: pointer; font-size: 0.9rem; }
+        .refresh-btn:hover { background: rgba(46,125,50,0.25); }
+        #dropArea { border: 1px dashed rgba(46,125,50,0.15); border-radius: 12px; padding: 4px 12px; text-align: center; color: rgba(46,125,50,0.2); background: transparent; margin-bottom: 20px; cursor: pointer; width: fit-content; margin-left: auto; margin-right: auto; font-size: 0.7rem; }
+        #dropArea:hover { border-color: rgba(46,125,50,0.3); color: rgba(46,125,50,0.4); }
+        #dropArea.dragover { border-color: #2e7d32; background: rgba(165,214,167,0.15); color: #1b5e20; }
+        #fileInput { display: none; }
+        .summary { display: flex; flex-wrap: wrap; gap: 30px 60px; background: rgba(255,255,255,0.7); padding: 14px 30px; border-radius: 16px; margin-bottom: 25px; border-left: 6px solid #2e7d32; align-items: center; justify-content: center; }
+        .summary-item { font-size: 1.1rem; }
+        .summary-item strong { font-family: 'Oswald', sans-serif; font-size: 1.8rem; }
+        .summary-item .fact { color: #1b5e20; }
+        .summary-item .diff { color: #e65100; }
+        .summary-item .total { color: #1b5e20; }
+        .chart-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); margin-bottom: 25px; }
+        .chart-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
+        .chart-rings { display: flex; flex-wrap: wrap; gap: 30px 40px; justify-content: center; }
+        .chart-ring-item { display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; }
+        .chart-ring-item:hover { transform: scale(1.05); }
+        .ring { width: 80px; height: 80px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: #e8e8e8; }
+        .ring-inner { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 700; color: #1b5e20; position: relative; z-index: 2; pointer-events: none; }
+        .ring-label { font-size: 0.7rem; font-weight: 600; color: #1e2a2f; margin-top: 6px; }
+        .ring-value { font-size: 0.6rem; color: #555; margin-top: 2px; }
+        .two-columns { display: flex; gap: 25px; flex-wrap: wrap; }
+        .left-col { flex: 2; min-width: 300px; }
+        .right-col { flex: 1; min-width: 280px; }
+        .weu-accordion { background: rgba(255,255,255,0.7); border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(165,214,167,0.4); overflow: hidden; }
+        .weu-header { background: rgba(200,230,201,0.5); padding: 14px 22px; font-family: 'Oswald', sans-serif; font-size: 1.6rem; font-weight: 600; color: #1b5e20; border-bottom: 2px solid rgba(165,214,167,0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .weu-header:hover { background: rgba(165,214,167,0.4); }
+        .weu-header .badge { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.95rem; background: rgba(255,255,255,0.6); padding: 4px 18px; border-radius: 40px; color: #1b5e20; }
+        .weu-header .arrow { font-size: 1.2rem; transition: 0.2s; color: #2e7d32; }
+        .weu-header.open .arrow { transform: rotate(180deg); }
+        .weu-body { display: none; padding: 5px 0; overflow-x: auto; }
+        .weu-body.open { display: block; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1100px; }
+        th { background: rgba(200,230,201,0.4); color: #1b5e20; font-weight: 600; padding: 8px 6px; border-bottom: 2px solid rgba(165,214,167,0.3); text-align: center; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 6px 4px; border-bottom: 1px solid rgba(200,230,201,0.3); text-align: center; background: rgba(255,255,255,0.4); }
+        tr:hover td { background: rgba(200,230,201,0.3); }
+        .col-svia { font-weight: 600; color: #1b5e20; }
+        .col-proj { color: #1565c0; font-weight: 500; }
+        .col-fact { color: #1b5e20; font-weight: 500; }
+        .col-diff { font-weight: 700; }
+        .diff-pos { color: #2e7d32; }
+        .diff-neg { color: #c62828; }
+        .date-cell { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: #1e2a2f; }
+        .protocol-status { display: inline-block; padding: 2px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; min-width: 60px; }
+        .status-onhand { background: #2e7d32; color: #fff; }
+        .status-red { background: #c62828; color: #fff; }
+        .status-orange { background: #ef6c00; color: #fff; }
+        .status-yellow { background: #f9a825; color: #000; }
+        .status-gray { background: #bdbdbd; color: #424242; }
+        .dkbs-btn { background: rgba(165,214,167,0.6); border: none; color: #1b5e20; padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
+        .dkbs-btn:hover { background: #81c784; }
+        .calendar-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
+        .calendar-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; }
+        .calendar-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+        .calendar-day { background: rgba(200,230,201,0.5); border-radius: 8px; padding: 8px 12px; cursor: pointer; border: 1px solid rgba(165,214,167,0.3); min-width: 85px; text-align: center; }
+        .calendar-day:hover { background: rgba(165,214,167,0.5); border-color: #2e7d32; }
+        .calendar-day .count { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; color: #1b5e20; font-size: 1.2rem; }
+        .calendar-day .date-label { color: #1e2a2f; font-size: 0.85rem; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #fff; padding: 25px 35px; border-radius: 20px; max-width: 700px; width: 95%; border-left: 6px solid #2e7d32; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 1.6rem; text-align: center; }
+        .modal-content .close { float: right; background: none; border: none; color: #757575; font-size: 2rem; cursor: pointer; }
+        .modal-content .close:hover { color: #c62828; }
+        .dkbs-list { list-style: none; padding: 0; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
+        .dkbs-list li { padding: 5px 0; border-bottom: 1px solid rgba(200,230,201,0.5); }
+        .piles-circle { position: relative; width: 450px; height: 450px; margin: 20px auto; }
+        .pile-dot { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: #fff; transform: translate(-50%, -50%); cursor: default; text-align: center; line-height: 1.1; border: 2px solid rgba(255,255,255,0.5); }
+        .pile-dot:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 10; }
+        .pile-dot.poured { background: #2e7d32; }
+        .pile-dot.not-poured { background: #c62828; }
+        .pile-dot .pile-num { font-size: 0.7rem; font-weight: 700; }
+        .pile-dot .pile-date { font-size: 0.45rem; font-weight: 400; opacity: 0.9; margin-top: 1px; }
+        .volumes-section { margin-top: 30px; background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
+        .volumes-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
+        .volumes-total { display: flex; flex-wrap: wrap; gap: 20px 50px; justify-content: center; padding: 10px 0 20px 0; border-bottom: 2px solid rgba(200,230,201,0.4); margin-bottom: 15px; }
+        .volumes-total-item { font-size: 1.1rem; }
+        .volumes-total-item strong { font-family: 'Oswald', sans-serif; font-size: 1.6rem; }
+        .volumes-total-item .proj { color: #1565c0; }
+        .volumes-total-item .fact { color: #1b5e20; }
+        .volumes-total-item .diff { color: #e65100; }
+        .volumes-weu { display: flex; flex-wrap: wrap; gap: 10px 25px; justify-content: center; }
+        .volumes-weu-item { background: rgba(200,230,201,0.25); padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; white-space: nowrap; }
+        .volumes-weu-item .v-name { font-weight: 600; color: #1b5e20; }
+        .volumes-weu-item .v-proj { color: #1565c0; }
+        .volumes-weu-item .v-fact { color: #1b5e20; }
+        .volumes-weu-item .v-diff { font-weight: 600; }
+        .v-diff.pos { color: #2e7d32; }
+        .v-diff.neg { color: #c62828; }
+        @media (max-width: 768px) {
+            .header-title { font-size: 2rem; }
+            .logo-icon { font-size: 1.8rem; }
+            .summary-item { font-size: 0.95rem; }
+            .weu-header { font-size: 1.3rem; }
+            .two-columns { flex-direction: column; }
+            .chart-ring-item { width: 80px; }
+            .ring { width: 65px; height: 65px; }
+            .ring-inner { width: 45px; height: 45px; font-size: 1rem; }
+            .piles-circle { width: 300px; height: 300px; }
+            .pile-dot { width: 36px; height: 36px; font-size: 0.55rem; }
+            .pile-dot .pile-date { font-size: 0.35rem; }
+            .volumes-total-item { font-size: 0.95rem; }
+            .volumes-total-item strong { font-size: 1.2rem; }
+            .volumes-weu-item { font-size: 0.75rem; }
+        }
+        @media (max-width: 480px) {
+            .piles-circle { width: 240px; height: 240px; }
+            .pile-dot { width: 30px; height: 30px; font-size: 0.45rem; }
+            .pile-dot .pile-date { display: none; }
+            .modal-content { padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <div class="logo-block">
+            <div class="logo-icon">НАВИГАТОР<small>строительство</small></div>
+            <span class="header-title">⚡ Майская ВЭС</span>
+        </div>
+        <div class="header-right">
+            <span class="sub">Буронабивные сваи</span>
+            <span id="dataSourceIndicator" class="data-source">Источник: файл</span>
+            <button class="refresh-btn" onclick="location.reload()">⟳ Обновить</button>
+        </div>
+    </div>
+
+    <div id="dropArea">
+        <span class="hint">Перетащите Excel-файл или кликните</span>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls">
+
+    <div id="summary" class="summary">
+        <div class="summary-item">🏗️ Залито свай: <strong class="fact" id="totalPoured">0</strong> / <strong class="total" id="totalPiles">0</strong></div>
+        <div class="summary-item">📊 Осталось залить: <strong class="diff" id="totalDiff">0</strong> свай</div>
+    </div>
+
+    <div class="chart-section">
+        <h2>📊 Выполнение по ВЭУ (нажмите на кольцо)</h2>
+        <div id="chartRings" class="chart-rings"></div>
+    </div>
+
+    <div class="two-columns">
+        <div class="left-col" id="weuContainer"></div>
+        <div class="right-col">
+            <div class="calendar-section">
+                <h2>📅 Календарь заливок</h2>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="volumes-section">
+        <h2>🧊 Объёмы бетона</h2>
+        <div id="volumesTotal" class="volumes-total"></div>
+        <div id="volumesWeu" class="volumes-weu"></div>
+    </div>
+</div>
+
+<!-- Модалки -->
+<div id="dkbsModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('dkbsModal')">&times;</button><h3 id="modalTitle">ДКБС</h3><ul id="dkbsList" class="dkbs-list"></ul></div></div>
+<div id="calendarModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('calendarModal')">&times;</button><h3 id="calModalTitle">Детали заливок</h3><div id="calModalBody" style="color:#1e2a2f; font-size:1rem;"></div></div></div>
+<div id="pilesModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('pilesModal')">&times;</button><h3 id="pilesModalTitle">Сваи ВЭУ</h3><div id="pilesModalBody" style="color:#1e2a2f; font-size:1rem; text-align:center;"></div></div></div>
+
+<script>
+// ===== ВСЕ ФУНКЦИИ ГЛОБАЛЬНЫЕ =====
+// Переменные, которые нужны в нескольких местах, объявляем один раз
+var dropArea, fileInput, summary, dataSourceIndicator;
+
+// Основные функции
+function toggleWeu(header) {
+    var body = header.nextElementSibling;
+    header.classList.toggle('open');
+    body.classList.toggle('open');
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function showPilesCircle(weuName, allData) {
+    var weuData = allData.find(function(w) { return w.weu === weuName; });
+    if (!weuData || !weuData.piles || weuData.piles.length === 0) {
+        alert('Нет данных по ВЭУ ' + weuName);
+        return;
+    }
+    var piles = weuData.piles;
+    var total = piles.length;
+    var poured = piles.filter(function(p) { return p.date && p.date !== ''; }).length;
+
+    document.getElementById('pilesModalTitle').textContent = weuName + ' — Сваи (' + poured + '/' + total + ')';
+    var container = document.getElementById('pilesModalBody');
+    var radius = 180, centerX = 225, centerY = 225;
+    var html = '<div class="piles-circle">';
+    piles.forEach(function(pile, index) {
+        var angle = (index / total) * 2 * Math.PI - Math.PI / 2;
+        var x = centerX + radius * Math.cos(angle);
+        var y = centerY + radius * Math.sin(angle);
+        var isPoured = pile.date && pile.date !== '';
+        var statusClass = isPoured ? 'poured' : 'not-poured';
+        var dateDisplay = isPoured ? pile.date : '';
+        html += '<div class="pile-dot ' + statusClass + '" style="left:' + x + 'px; top:' + y + 'px;">' +
+                    '<span class="pile-num">' + pile.num + '</span>' +
+                    '<span class="pile-date">' + dateDisplay + '</span>' +
+                '</div>';
+    });
+    html += '</div><div style="margin-top:15px; display:flex; justify-content:center; gap:30px; font-size:0.9rem;">' +
+                '<span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#2e7d32; vertical-align:middle; margin-right:6px;"></span> Залито (' + poured + ')</span>' +
+                '<span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#c62828; vertical-align:middle; margin-right:6px;"></span> Не залито (' + (total - poured) + ')</span>' +
+            '</div>';
+    container.innerHTML = html;
+    document.getElementById('pilesModal').classList.add('active');
+}
+
+function excelDateToStr(excelDate) {
+    if (!excelDate || excelDate === 0) return '';
+    if (typeof excelDate === 'string') return excelDate;
+    var epoch = new Date(1899, 11, 30);
+    var d = new Date(epoch.getTime() + excelDate * 86400000);
+    if (d.getFullYear() < 1900) return '';
+    var day = String(d.getDate()).padStart(2, '0');
+    var month = String(d.getMonth() + 1).padStart(2, '0');
+    var year = d.getFullYear();
+    return day + '.' + month + '.' + year;
+}
+
+function parseWeuSheet(sheet, sheetName) {
+    var data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (data.length < 6) return null;
+
+    var headerRowIndex = -1;
+    for (var i = 0; i < Math.min(data.length, 15); i++) {
+        var row = data[i];
+        var hasWeu = row.some(function(cell) { return String(cell).trim() === '№ВЭУ'; });
+        var hasPile = row.some(function(cell) { return String(cell).trim() === '№ сваи'; });
+        if (hasWeu && hasPile) {
+            headerRowIndex = i;
+            break;
+        }
+    }
+    if (headerRowIndex === -1) headerRowIndex = 5;
+    var headerRow = data[headerRowIndex] || [];
+    var idx = { weu: -1, pile: -1, proj: -1, date: -1, dkbs1: -1, vol1: -1, dkbs2: -1, vol2: -1, dkbs3: -1, vol3: -1, dkbs4: -1, vol4: -1,
+                p7: -1, p14: -1, p28: -1, s7: -1, s14: -1, s28: -1 };
+    headerRow.forEach(function(cell, i) {
+        var v = String(cell).trim();
+        if (v === '№ВЭУ') idx.weu = i;
+        else if (v === '№ сваи') idx.pile = i;
+        else if (v === 'м3 (проект)') idx.proj = i;
+        else if (v === 'Дата заливки') idx.date = i;
+        else if (v === 'ДКБС№' && idx.dkbs1 === -1) idx.dkbs1 = i;
+        else if (v === 'м3 (ДКБС)' && idx.vol1 === -1) idx.vol1 = i;
+        else if (v === 'ДКБС№' && idx.dkbs2 === -1) idx.dkbs2 = i;
+        else if (v === 'м3 (ДКБС)' && idx.vol2 === -1) idx.vol2 = i;
+        else if (v === 'ДКБС№' && idx.dkbs3 === -1) idx.dkbs3 = i;
+        else if (v === 'м3 (ДКБС)' && idx.vol3 === -1) idx.vol3 = i;
+        else if (v === 'ДКБС№' && idx.dkbs4 === -1) idx.dkbs4 = i;
+        else if (v === 'м3 (ДКБС)' && idx.vol4 === -1) idx.vol4 = i;
+        else if (v === '7 суток (Протокол)') idx.p7 = i;
+        else if (v === '14 суток (Протокол)') idx.p14 = i;
+        else if (v === '28 суток (Протокол)') idx.p28 = i;
+        else if (v === '7 суток (Протокол)<br>Статус') idx.s7 = i;
+        else if (v === '14 суток (Статус)') idx.s14 = i;
+        else if (v === '28 суток  (Протокол)<br>Статус') idx.s28 = i;
+    });
+    if (idx.pile === -1) idx.pile = 1;
+    if (idx.proj === -1) idx.proj = 2;
+    if (idx.date === -1) idx.date = 4;
+    if (idx.dkbs1 === -1) idx.dkbs1 = 5;
+    if (idx.vol1 === -1) idx.vol1 = 6;
+    if (idx.dkbs2 === -1) idx.dkbs2 = 7;
+    if (idx.vol2 === -1) idx.vol2 = 8;
+    if (idx.dkbs3 === -1) idx.dkbs3 = 9;
+    if (idx.vol3 === -1) idx.vol3 = 10;
+    if (idx.dkbs4 === -1) idx.dkbs4 = 11;
+    if (idx.vol4 === -1) idx.vol4 = 12;
+    if (idx.p7 === -1) idx.p7 = 15;
+    if (idx.p14 === -1) idx.p14 = 16;
+    if (idx.p28 === -1) idx.p28 = 17;
+    if (idx.s7 === -1) idx.s7 = 18;
+    if (idx.s14 === -1) idx.s14 = 19;
+    if (idx.s28 === -1) idx.s28 = 20;
+
+    var piles = [];
+    var weuNumber = '';
+    for (var r = headerRowIndex + 1; r < data.length; r++) {
+        var row = data[r];
+        var pileNum = row[idx.pile] !== undefined ? String(row[idx.pile]).trim() : '';
+        if (!pileNum) continue;
+        var projVal = parseFloat(row[idx.proj]) || 0;
+        var dateStr = excelDateToStr(row[idx.date]);
+        var dkbs = [
+            { num: row[idx.dkbs1] || '', vol: parseFloat(row[idx.vol1]) || 0 },
+            { num: row[idx.dkbs2] || '', vol: parseFloat(row[idx.vol2]) || 0 },
+            { num: row[idx.dkbs3] || '', vol: parseFloat(row[idx.vol3]) || 0 },
+            { num: row[idx.dkbs4] || '', vol: parseFloat(row[idx.vol4]) || 0 }
+        ].filter(function(d) { return d.num !== '' || d.vol !== 0; });
+        var factVol = dkbs.reduce(function(sum, d) { return sum + d.vol; }, 0);
+        var p7 = excelDateToStr(row[idx.p7]);
+        var p14 = excelDateToStr(row[idx.p14]);
+        var p28 = excelDateToStr(row[idx.p28]);
+        var s7 = String(row[idx.s7] || '').trim();
+        var s14 = String(row[idx.s14] || '').trim();
+        var s28 = String(row[idx.s28] || '').trim();
+
+        var weuFromA = row[idx.weu] ? String(row[idx.weu]).trim() : '';
+        if (weuFromA && weuFromA.startsWith('ВЭУ-')) weuNumber = weuFromA;
+
+        piles.push({
+            num: pileNum,
+            proj: projVal,
+            date: dateStr,
+            dkbs: dkbs,
+            fact: factVol,
+            p7: p7, p14: p14, p28: p28,
+            s7: s7, s14: s14, s28: s28
+        });
+    }
+    if (piles.length === 0) return null;
+    if (!weuNumber) weuNumber = 'ВЭУ-' + sheetName;
+    return { weu: weuNumber, piles: piles };
+}
+
+function processWorkbook(workbook) {
+    var sheetNames = workbook.SheetNames;
+    var weuSheets = sheetNames.filter(function(name) { return /^[1-9]$|^1[0-8]$/.test(name); }).sort(function(a,b) { return Number(a)-Number(b); });
+    if (weuSheets.length === 0) {
+        alert('Не найдены листы с номерами ВЭУ (1-18). Проверьте файл.');
+        return null;
+    }
+    var newData = [];
+    weuSheets.forEach(function(name) {
+        var sheet = workbook.Sheets[name];
+        var parsed = parseWeuSheet(sheet, name);
+        if (parsed) newData.push(parsed);
+    });
+    if (newData.length === 0) {
+        alert('Не удалось распарсить данные. Проверьте структуру файла.');
+        return null;
+    }
+    return newData;
+}
+
+function renderAll(allWeuData) {
+    var totalPoured = 0, totalPilesCount = 0;
+    var totalProjVol = 0, totalFactVol = 0;
+    var allDates = {};
+    var weuStats = [];
+    var weuVolumes = [];
+
+    var html = '';
+    allWeuData.forEach(function(weuObj) {
+        var weu = weuObj.weu;
+        var piles = weuObj.piles;
+        var weuPoured = 0;
+        var weuProjVol = 0;
+        var weuFactVol = 0;
+        var rows = '';
+
+        var validPiles = piles.filter(function(p) { return p.num && p.num !== ''; });
+        var weuTotal = validPiles.length;
+
+        validPiles.forEach(function(p) {
+            weuProjVol += p.proj;
+            weuFactVol += p.fact;
+            totalProjVol += p.proj;
+            totalFactVol += p.fact;
+
+            if (p.date && p.date !== '') {
+                weuPoured++;
+                totalPoured++;
+            }
+            totalPilesCount++;
+
+            var diff = p.fact - p.proj;
+            var diffStr = diff.toFixed(2);
+            var diffClass = diff >= 0 ? 'diff-pos' : 'diff-neg';
+
+            var dkbsStr = p.dkbs.map(function(d) { return d.num + ' (' + d.vol + ')'; }).join('; ');
+            var dkbsBtn = '<button class="dkbs-btn" onclick="showDkbs(\'' + weu + '\', ' + p.num + ', \'' + dkbsStr + '\')">📋</button>';
+
+            var dateDisplay = p.date || '—';
+
+            function getStatusLabel(val) {
+                if (val === '+') return 'На руках';
+                return val || '—';
+            }
+            function getStatusClass(val) {
+                if (val === '+') return 'status-onhand';
+                return 'status-gray';
+            }
+            function getDateStatus(dateStr, statusVal) {
+                if (!dateStr || dateStr === '') return 'status-gray';
+                if (statusVal === '+') return 'status-onhand';
+                var parts = dateStr.split('.');
+                if (parts.length !== 3) return 'status-gray';
+                var d = new Date(parts[2], parts[1]-1, parts[0]);
+                if (d.getFullYear() < 1900) return 'status-gray';
+                var now = new Date();
+                now.setHours(0,0,0,0);
+                var diffDays = Math.floor((d - now) / (86400000));
+                if (diffDays < 0) return 'status-red';
+                if (diffDays === 0) return 'status-orange';
+                if (diffDays <= 3) return 'status-yellow';
+                return 'status-gray';
+            }
+
+            var s7label = getStatusLabel(p.s7);
+            var s14label = getStatusLabel(p.s14);
+            var s28label = getStatusLabel(p.s28);
+            var s7class = getStatusClass(p.s7);
+            var s14class = getStatusClass(p.s14);
+            var s28class = getStatusClass(p.s28);
+            var p7class = getDateStatus(p.p7, p.s7);
+            var p14class = getDateStatus(p.p14, p.s14);
+            var p28class = getDateStatus(p.p28, p.s28);
+
+            rows += '<tr>' +
+                '<td class="col-svia">' + p.num + '</td>' +
+                '<td class="col-proj">' + p.proj.toFixed(2) + '</td>' +
+                '<td class="date-cell">' + dateDisplay + '</td>' +
+                '<td class="col-fact">' + p.fact.toFixed(2) + '</td>' +
+                '<td class="col-diff ' + diffClass + '">' + diffStr + '</td>' +
+                '<td>' + dkbsBtn + '</td>' +
+                '<td class="date-cell"><span class="protocol-status ' + p7class + '">' + (p.p7 || '—') + '</span></td>' +
+                '<td><span class="protocol-status ' + s7class + '">' + s7label + '</span></td>' +
+                '<td class="date-cell"><span class="protocol-status ' + p14class + '">' + (p.p14 || '—') + '</span></td>' +
+                '<td><span class="protocol-status ' + s14class + '">' + s14label + '</span></td>' +
+                '<td class="date-cell"><span class="protocol-status ' + p28class + '">' + (p.p28 || '—') + '</span></td>' +
+                '<td><span class="protocol-status ' + s28class + '">' + s28label + '</span></td>' +
+                '</tr>';
+
+            if (p.date && p.date !== '') {
+                var dateKey = p.date;
+                if (!allDates[dateKey]) allDates[dateKey] = [];
+                allDates[dateKey].push({ weu: weu, pile: p.num });
+            }
+        });
+
+        weuStats.push({ weu: weu, total: weuTotal, poured: weuPoured });
+        weuVolumes.push({ weu: weu, proj: weuProjVol, fact: weuFactVol });
+
+        html += '<div class="weu-accordion">' +
+            '<div class="weu-header" onclick="toggleWeu(this)">' +
+                '<span>' + weu + '</span>' +
+                '<span class="badge">Свай: ' + weuPoured + ' / ' + weuTotal + '</span>' +
+                '<span class="arrow">▼</span>' +
+            '</div>' +
+            '<div class="weu-body">' +
+                '<div class="weu-table-wrap">' +
+                    '<table>' +
+                        '<thead><tr>' +
+                            '<th>№ сваи</th><th>Проект, м³</th><th>Дата заливки</th><th>Факт, м³</th><th>Разница</th><th>ДКБС</th>' +
+                            '<th>7 сут (дата)</th><th>7 сут (статус)</th><th>14 сут (дата)</th><th>14 сут (статус)</th><th>28 сут (дата)</th><th>28 сут (статус)</th>' +
+                        '</tr></thead>' +
+                        '<tbody>' + rows + '</tbody>' +
+                    '</table>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
+    });
+
+    document.getElementById('weuContainer').innerHTML = html;
+
+    document.getElementById('totalPoured').textContent = totalPoured;
+    document.getElementById('totalPiles').textContent = totalPilesCount;
+    var remaining = totalPilesCount - totalPoured;
+    document.getElementById('totalDiff').textContent = remaining;
+    document.getElementById('totalDiff').style.color = remaining > 0 ? '#e65100' : '#2e7d32';
+
+    var volDiff = totalFactVol - totalProjVol;
+    document.getElementById('volumesTotal').innerHTML = '' +
+        '<div class="volumes-total-item">📐 Проектный объём: <strong class="proj">' + totalProjVol.toFixed(2) + '</strong> м³</div>' +
+        '<div class="volumes-total-item">🧱 Фактический объём: <strong class="fact">' + totalFactVol.toFixed(2) + '</strong> м³</div>' +
+        '<div class="volumes-total-item">📊 Разница: <strong class="diff">' + volDiff.toFixed(2) + '</strong> м³</div>';
+    var weuVolHtml = '';
+    weuVolumes.forEach(function(w) {
+        var diff = w.fact - w.proj;
+        var diffClass = diff >= 0 ? 'pos' : 'neg';
+        weuVolHtml += '<span class="volumes-weu-item">' +
+            '<span class="v-name">' + w.weu + '</span>: ' +
+            '<span class="v-fact">' + w.fact.toFixed(2) + '</span> / ' +
+            '<span class="v-proj">' + w.proj.toFixed(2) + '</span> ' +
+            '<span class="v-diff ' + diffClass + '">(' + (diff >= 0 ? '+' : '') + diff.toFixed(2) + ')</span>' +
+        '</span>';
+    });
+    document.getElementById('volumesWeu').innerHTML = weuVolHtml;
+
+    var sortedDates = Object.keys(allDates).sort(function(a,b) {
+        var da = a.split('.').reverse().join('');
+        var db = b.split('.').reverse().join('');
+        return da.localeCompare(db);
+    });
+    var calHtml = '';
+    sortedDates.forEach(function(dateStr) {
+        var count = allDates[dateStr].length;
+        calHtml += '<div class="calendar-day" onclick="showCalendarDetails(\'' + dateStr + '\', window.allDates)">' +
+            '<span class="date-label">' + dateStr + '</span>' +
+            '<span class="count">' + count + '</span>' +
+        '</div>';
+    });
+    document.getElementById('calendarGrid').innerHTML = calHtml || '<div style="color:#2e7d32;">Нет данных о заливках</div>';
+
+    var ringsHtml = '';
+    weuStats.forEach(function(stat) {
+        var percent = stat.total > 0 ? Math.round(stat.poured / stat.total * 100) : 0;
+        var color = percent === 100 ? '#2e7d32' : percent >= 50 ? '#f9a825' : '#ef6c00';
+        var rotation = percent / 100 * 360;
+        ringsHtml += '<div class="chart-ring-item" onclick="showPilesCircle(\'' + stat.weu + '\', window.allWeuData)">' +
+            '<div class="ring" style="background: conic-gradient(' + color + ' 0deg ' + rotation + 'deg, #e8e8e8 ' + rotation + 'deg 360deg);">' +
+                '<div class="ring-inner">' + percent + '%</div>' +
+            '</div>' +
+            '<div class="ring-label">' + stat.weu + '</div>' +
+            '<div class="ring-value">' + stat.poured + '/' + stat.total + '</div>' +
+        '</div>';
+    });
+    document.getElementById('chartRings').innerHTML = ringsHtml;
+
+    window.allWeuData = allWeuData;
+    window.allDates = allDates;
+}
+
+// Вспомогательные функции для модалок (глобальные)
+window.showCalendarDetails = function(dateStr, allDates) {
+    var details = allDates[dateStr] || [];
+    var bodyHtml = '<p style="font-size:1.1rem; margin-bottom:10px;"><strong>📅 ' + dateStr + '</strong></p>';
+    if (details.length === 0) {
+        bodyHtml += '<p>Нет данных</p>';
+    } else {
+        var grouped = {};
+        details.forEach(function(item) {
+            if (!grouped[item.weu]) grouped[item.weu] = [];
+            grouped[item.weu].push(item.pile);
+        });
+        bodyHtml += '<ul style="list-style:none; padding:0;">';
+        for (var weu in grouped) {
+            var piles = grouped[weu];
+            var pilesStr = piles.join(', ');
+            bodyHtml += '<li style="padding:4px 0; border-bottom:1px solid rgba(200,230,201,0.5);">' +
+                '<strong style="color:#1b5e20;">' + weu + '</strong>: ' + piles.length + ' свай' +
+                '<span style="color:#555; font-size:0.85rem; display:block; padding-left:10px;">№' + pilesStr + '</span>' +
+            '</li>';
+        }
+        bodyHtml += '</ul>';
+    }
+    document.getElementById('calModalTitle').textContent = '📅 Детали заливок';
+    document.getElementById('calModalBody').innerHTML = bodyHtml;
+    document.getElementById('calendarModal').classList.add('active');
+};
+
+window.showDkbs = function(weu, pileNum, dkbsStr) {
+    document.getElementById('modalTitle').textContent = weu + ' — Свая ' + pileNum;
+    var items = dkbsStr.split('; ').filter(function(s) { return s; });
+    document.getElementById('dkbsList').innerHTML = items.map(function(item) { return '<li>' + item + '</li>'; }).join('') || '<li>Нет данных</li>';
+    document.getElementById('dkbsModal').classList.add('active');
+};
+
+// ==== Обработчики загрузки ====
+function handleFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, { type: 'array' });
+        var allWeuData = processWorkbook(workbook);
+        if (allWeuData) {
+            renderAll(allWeuData);
+            document.getElementById('dataSourceIndicator').textContent = 'Источник: вручную загруженный файл';
+            document.getElementById('dropArea').style.display = 'none';
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+// Инициализация элементов
+document.addEventListener('DOMContentLoaded', function() {
+    dropArea = document.getElementById('dropArea');
+    fileInput = document.getElementById('fileInput');
+    summary = document.getElementById('summary');
+    dataSourceIndicator = document.getElementById('dataSourceIndicator');
+
+    // События
+    dropArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    dropArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    dropArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) handleFile(this.files[0]);
+        this.value = '';
+    });
+    dropArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Автоматическая загрузка с сервера
+    function tryFetchAndLoad() {
+        fetch('data.xlsx?t=' + Date.now())
+            .then(function(res) {
+                if (!res.ok) throw new Error('Файл не найден (статус ' + res.status + ')');
+                return res.arrayBuffer();
+            })
+            .then(function(data) {
+                var workbook = XLSX.read(data, { type: 'array' });
+                var allWeuData = processWorkbook(workbook);
+                if (allWeuData) {
+                    renderAll(allWeuData);
+                    dataSourceIndicator.textContent = 'Источник: data.xlsx (с сервера)';
+                } else {
+                    dataSourceIndicator.textContent = 'Ошибка парсинга, загрузите вручную';
+                    showManualUploadMessage();
+                }
+            })
+            .catch(function(err) {
+                console.warn('Не удалось загрузить data.xlsx:', err.message);
+                dataSourceIndicator.textContent = 'Файл не найден, загрузите вручную';
+                showManualUploadMessage();
+            });
+    }
+
+    function showManualUploadMessage() {
+        if (!document.getElementById('manualUploadMsg')) {
+            var msg = document.createElement('div');
+            msg.id = 'manualUploadMsg';
+            msg.style.cssText = 'color:#f9a825; padding:5px; font-size:0.9rem; width:100%; text-align:center;';
+            msg.textContent = '💡 Для загрузки данных перетащите Excel-файл в область выше или кликните на неё.';
+            summary.appendChild(msg);
+        }
+    }
+
+    tryFetchAndLoad();
+});
+
+// Автообновление в 9:30
+setInterval(function() {
+    var now = new Date();
+    if (now.getHours() === 9 && now.getMinutes() === 30) {
+        location.reload();
+    }
+}, 60000);
+
+console.log('Майская ВЭС — сайт загружен.');
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Майская ВЭС — Сваи</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Oswald:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
