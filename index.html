@@ -3,682 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Майская ВЭС — Сваи</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Oswald:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* --- Стили (полные) --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #e8f5e9; color: #1e2a2f; padding: 20px; font-family: 'Inter', sans-serif; min-height: 100vh; }
-        .wrapper { max-width: 1600px; margin: 0 auto; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); border-radius: 24px; padding: 25px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid rgba(46,125,50,0.3); padding-bottom: 12px; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-        .logo-block { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { font-size: 2.4rem; font-weight: 800; font-family: 'Oswald', sans-serif; color: #1b5e20; }
-        .logo-icon small { display: block; font-size: 0.6rem; font-family: 'Inter', sans-serif; font-weight: 300; letter-spacing: 3px; color: #2e7d32; text-transform: uppercase; margin-top: -2px; }
-        .header-title { font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700; letter-spacing: 2px; color: #1b5e20; text-transform: uppercase; }
-        .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .header .sub { font-family: 'Inter', sans-serif; font-size: 1rem; color: #2e7d32; background: rgba(200,230,201,0.7); padding: 6px 20px; border-radius: 40px; border: 1px solid rgba(46,125,50,0.2); }
-        .data-source { font-size: 0.8rem; color: #555; background: rgba(255,255,255,0.5); padding: 4px 14px; border-radius: 30px; border: 1px solid #ccc; }
-        .refresh-btn { background: rgba(46,125,50,0.15); border: 1px solid rgba(46,125,50,0.2); color: #1b5e20; padding: 6px 16px; border-radius: 40px; cursor: pointer; font-size: 0.9rem; }
-        .refresh-btn:hover { background: rgba(46,125,50,0.25); }
-        #dropArea { border: 1px dashed rgba(46,125,50,0.15); border-radius: 12px; padding: 4px 12px; text-align: center; color: rgba(46,125,50,0.2); background: transparent; margin-bottom: 20px; cursor: pointer; width: fit-content; margin-left: auto; margin-right: auto; font-size: 0.7rem; }
-        #dropArea:hover { border-color: rgba(46,125,50,0.3); color: rgba(46,125,50,0.4); }
-        #dropArea.dragover { border-color: #2e7d32; background: rgba(165,214,167,0.15); color: #1b5e20; }
-        #fileInput { display: none; }
-        .summary { display: flex; flex-wrap: wrap; gap: 30px 60px; background: rgba(255,255,255,0.7); padding: 14px 30px; border-radius: 16px; margin-bottom: 25px; border-left: 6px solid #2e7d32; align-items: center; justify-content: center; }
-        .summary-item { font-size: 1.1rem; }
-        .summary-item strong { font-family: 'Oswald', sans-serif; font-size: 1.8rem; }
-        .summary-item .fact { color: #1b5e20; }
-        .summary-item .diff { color: #e65100; }
-        .summary-item .total { color: #1b5e20; }
-        .chart-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); margin-bottom: 25px; }
-        .chart-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
-        .chart-rings { display: flex; flex-wrap: wrap; gap: 30px 40px; justify-content: center; }
-        .chart-ring-item { display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; }
-        .chart-ring-item:hover { transform: scale(1.05); }
-        .ring { width: 80px; height: 80px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: #e8e8e8; }
-        .ring-inner { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 700; color: #1b5e20; position: relative; z-index: 2; pointer-events: none; }
-        .ring-label { font-size: 0.7rem; font-weight: 600; color: #1e2a2f; margin-top: 6px; }
-        .ring-value { font-size: 0.6rem; color: #555; margin-top: 2px; }
-        .two-columns { display: flex; gap: 25px; flex-wrap: wrap; }
-        .left-col { flex: 2; min-width: 300px; }
-        .right-col { flex: 1; min-width: 280px; }
-        .weu-accordion { background: rgba(255,255,255,0.7); border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(165,214,167,0.4); overflow: hidden; }
-        .weu-header { background: rgba(200,230,201,0.5); padding: 14px 22px; font-family: 'Oswald', sans-serif; font-size: 1.6rem; font-weight: 600; color: #1b5e20; border-bottom: 2px solid rgba(165,214,167,0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .weu-header:hover { background: rgba(165,214,167,0.4); }
-        .weu-header .badge { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.95rem; background: rgba(255,255,255,0.6); padding: 4px 18px; border-radius: 40px; color: #1b5e20; }
-        .weu-header .arrow { font-size: 1.2rem; transition: 0.2s; color: #2e7d32; }
-        .weu-header.open .arrow { transform: rotate(180deg); }
-        .weu-body { display: none; padding: 5px 0; overflow-x: auto; }
-        .weu-body.open { display: block; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1100px; }
-        th { background: rgba(200,230,201,0.4); color: #1b5e20; font-weight: 600; padding: 8px 6px; border-bottom: 2px solid rgba(165,214,167,0.3); text-align: center; font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 6px 4px; border-bottom: 1px solid rgba(200,230,201,0.3); text-align: center; background: rgba(255,255,255,0.4); }
-        tr:hover td { background: rgba(200,230,201,0.3); }
-        .col-svia { font-weight: 600; color: #1b5e20; }
-        .col-proj { color: #1565c0; font-weight: 500; }
-        .col-fact { color: #1b5e20; font-weight: 500; }
-        .col-diff { font-weight: 700; }
-        .diff-pos { color: #2e7d32; }
-        .diff-neg { color: #c62828; }
-        .date-cell { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: #1e2a2f; }
-        .protocol-status { display: inline-block; padding: 2px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; min-width: 60px; }
-        .status-onhand { background: #2e7d32; color: #fff; }
-        .status-red { background: #c62828; color: #fff; }
-        .status-orange { background: #ef6c00; color: #fff; }
-        .status-yellow { background: #f9a825; color: #000; }
-        .status-gray { background: #bdbdbd; color: #424242; }
-        .dkbs-btn { background: rgba(165,214,167,0.6); border: none; color: #1b5e20; padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-        .dkbs-btn:hover { background: #81c784; }
-        .calendar-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
-        .calendar-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; }
-        .calendar-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .calendar-day { background: rgba(200,230,201,0.5); border-radius: 8px; padding: 8px 12px; cursor: pointer; border: 1px solid rgba(165,214,167,0.3); min-width: 85px; text-align: center; }
-        .calendar-day:hover { background: rgba(165,214,167,0.5); border-color: #2e7d32; }
-        .calendar-day .count { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; color: #1b5e20; font-size: 1.2rem; }
-        .calendar-day .date-label { color: #1e2a2f; font-size: 0.85rem; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: #fff; padding: 25px 35px; border-radius: 20px; max-width: 700px; width: 95%; border-left: 6px solid #2e7d32; max-height: 90vh; overflow-y: auto; }
-        .modal-content h3 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 1.6rem; text-align: center; }
-        .modal-content .close { float: right; background: none; border: none; color: #757575; font-size: 2rem; cursor: pointer; }
-        .modal-content .close:hover { color: #c62828; }
-        .dkbs-list { list-style: none; padding: 0; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
-        .dkbs-list li { padding: 5px 0; border-bottom: 1px solid rgba(200,230,201,0.5); }
-        .piles-circle { position: relative; width: 450px; height: 450px; margin: 20px auto; }
-        .pile-dot { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: #fff; transform: translate(-50%, -50%); cursor: default; text-align: center; line-height: 1.1; border: 2px solid rgba(255,255,255,0.5); }
-        .pile-dot:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 10; }
-        .pile-dot.poured { background: #2e7d32; }
-        .pile-dot.not-poured { background: #c62828; }
-        .pile-dot .pile-num { font-size: 0.7rem; font-weight: 700; }
-        .pile-dot .pile-date { font-size: 0.45rem; font-weight: 400; opacity: 0.9; margin-top: 1px; }
-        .volumes-section { margin-top: 30px; background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
-        .volumes-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
-        .volumes-total { display: flex; flex-wrap: wrap; gap: 20px 50px; justify-content: center; padding: 10px 0 20px 0; border-bottom: 2px solid rgba(200,230,201,0.4); margin-bottom: 15px; }
-        .volumes-total-item { font-size: 1.1rem; }
-        .volumes-total-item strong { font-family: 'Oswald', sans-serif; font-size: 1.6rem; }
-        .volumes-total-item .proj { color: #1565c0; }
-        .volumes-total-item .fact { color: #1b5e20; }
-        .volumes-total-item .diff { color: #e65100; }
-        .volumes-weu { display: flex; flex-wrap: wrap; gap: 10px 25px; justify-content: center; }
-        .volumes-weu-item { background: rgba(200,230,201,0.25); padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; white-space: nowrap; }
-        .volumes-weu-item .v-name { font-weight: 600; color: #1b5e20; }
-        .volumes-weu-item .v-proj { color: #1565c0; }
-        .volumes-weu-item .v-fact { color: #1b5e20; }
-        .volumes-weu-item .v-diff { font-weight: 600; }
-        .v-diff.pos { color: #2e7d32; }
-        .v-diff.neg { color: #c62828; }
-        @media (max-width: 768px) {
-            .header-title { font-size: 2rem; }
-            .logo-icon { font-size: 1.8rem; }
-            .summary-item { font-size: 0.95rem; }
-            .weu-header { font-size: 1.3rem; }
-            .two-columns { flex-direction: column; }
-            .chart-ring-item { width: 80px; }
-            .ring { width: 65px; height: 65px; }
-            .ring-inner { width: 45px; height: 45px; font-size: 1rem; }
-            .piles-circle { width: 300px; height: 300px; }
-            .pile-dot { width: 36px; height: 36px; font-size: 0.55rem; }
-            .pile-dot .pile-date { font-size: 0.35rem; }
-            .volumes-total-item { font-size: 0.95rem; }
-            .volumes-total-item strong { font-size: 1.2rem; }
-            .volumes-weu-item { font-size: 0.75rem; }
-        }
-        @media (max-width: 480px) {
-            .piles-circle { width: 240px; height: 240px; }
-            .pile-dot { width: 30px; height: 30px; font-size: 0.45rem; }
-            .pile-dot .pile-date { display: none; }
-            .modal-content { padding: 15px; }
-        }
-    </style>
-</head>
-<body>
-<div class="wrapper">
-    <div class="header">
-        <div class="logo-block">
-            <div class="logo-icon">НАВИГАТОР<small>строительство</small></div>
-            <span class="header-title">⚡ Майская ВЭС</span>
-        </div>
-        <div class="header-right">
-            <span class="sub">Буронабивные сваи</span>
-            <span id="dataSourceIndicator" class="data-source">Источник: файл</span>
-            <button class="refresh-btn" onclick="location.reload()">⟳ Обновить</button>
-        </div>
-    </div>
-
-    <div id="dropArea">
-        <span class="hint">Перетащите Excel-файл или кликните</span>
-    </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
-
-    <div id="summary" class="summary">
-        <div class="summary-item">🏗️ Залито свай: <strong class="fact" id="totalPoured">0</strong> / <strong class="total" id="totalPiles">0</strong></div>
-        <div class="summary-item">📊 Осталось залить: <strong class="diff" id="totalDiff">0</strong> свай</div>
-    </div>
-
-    <div class="chart-section">
-        <h2>📊 Выполнение по ВЭУ (нажмите на кольцо)</h2>
-        <div id="chartRings" class="chart-rings"></div>
-    </div>
-
-    <div class="two-columns">
-        <div class="left-col" id="weuContainer"></div>
-        <div class="right-col">
-            <div class="calendar-section">
-                <h2>📅 Календарь заливок</h2>
-                <div id="calendarGrid" class="calendar-grid"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="volumes-section">
-        <h2>🧊 Объёмы бетона</h2>
-        <div id="volumesTotal" class="volumes-total"></div>
-        <div id="volumesWeu" class="volumes-weu"></div>
-    </div>
-</div>
-
-<!-- Модалки -->
-<div id="dkbsModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('dkbsModal')">&times;</button><h3 id="modalTitle">ДКБС</h3><ul id="dkbsList" class="dkbs-list"></ul></div></div>
-<div id="calendarModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('calendarModal')">&times;</button><h3 id="calModalTitle">Детали заливок</h3><div id="calModalBody" style="color:#1e2a2f; font-size:1rem;"></div></div></div>
-<div id="pilesModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('pilesModal')">&times;</button><h3 id="pilesModalTitle">Сваи ВЭУ</h3><div id="pilesModalBody" style="color:#1e2a2f; font-size:1rem; text-align:center;"></div></div></div>
-
-<script>
-// ===== ВСЕ ФУНКЦИИ ГЛОБАЛЬНЫЕ =====
-// Переменные, которые нужны в нескольких местах, объявляем один раз
-var dropArea, fileInput, summary, dataSourceIndicator;
-
-// Основные функции
-function toggleWeu(header) {
-    var body = header.nextElementSibling;
-    header.classList.toggle('open');
-    body.classList.toggle('open');
-}
-
-function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
-}
-
-function showPilesCircle(weuName, allData) {
-    var weuData = allData.find(function(w) { return w.weu === weuName; });
-    if (!weuData || !weuData.piles || weuData.piles.length === 0) {
-        alert('Нет данных по ВЭУ ' + weuName);
-        return;
-    }
-    var piles = weuData.piles;
-    var total = piles.length;
-    var poured = piles.filter(function(p) { return p.date && p.date !== ''; }).length;
-
-    document.getElementById('pilesModalTitle').textContent = weuName + ' — Сваи (' + poured + '/' + total + ')';
-    var container = document.getElementById('pilesModalBody');
-    var radius = 180, centerX = 225, centerY = 225;
-    var html = '<div class="piles-circle">';
-    piles.forEach(function(pile, index) {
-        var angle = (index / total) * 2 * Math.PI - Math.PI / 2;
-        var x = centerX + radius * Math.cos(angle);
-        var y = centerY + radius * Math.sin(angle);
-        var isPoured = pile.date && pile.date !== '';
-        var statusClass = isPoured ? 'poured' : 'not-poured';
-        var dateDisplay = isPoured ? pile.date : '';
-        html += '<div class="pile-dot ' + statusClass + '" style="left:' + x + 'px; top:' + y + 'px;">' +
-                    '<span class="pile-num">' + pile.num + '</span>' +
-                    '<span class="pile-date">' + dateDisplay + '</span>' +
-                '</div>';
-    });
-    html += '</div><div style="margin-top:15px; display:flex; justify-content:center; gap:30px; font-size:0.9rem;">' +
-                '<span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#2e7d32; vertical-align:middle; margin-right:6px;"></span> Залито (' + poured + ')</span>' +
-                '<span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#c62828; vertical-align:middle; margin-right:6px;"></span> Не залито (' + (total - poured) + ')</span>' +
-            '</div>';
-    container.innerHTML = html;
-    document.getElementById('pilesModal').classList.add('active');
-}
-
-function excelDateToStr(excelDate) {
-    if (!excelDate || excelDate === 0) return '';
-    if (typeof excelDate === 'string') return excelDate;
-    var epoch = new Date(1899, 11, 30);
-    var d = new Date(epoch.getTime() + excelDate * 86400000);
-    if (d.getFullYear() < 1900) return '';
-    var day = String(d.getDate()).padStart(2, '0');
-    var month = String(d.getMonth() + 1).padStart(2, '0');
-    var year = d.getFullYear();
-    return day + '.' + month + '.' + year;
-}
-
-function parseWeuSheet(sheet, sheetName) {
-    var data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-    if (data.length < 6) return null;
-
-    var headerRowIndex = -1;
-    for (var i = 0; i < Math.min(data.length, 15); i++) {
-        var row = data[i];
-        var hasWeu = row.some(function(cell) { return String(cell).trim() === '№ВЭУ'; });
-        var hasPile = row.some(function(cell) { return String(cell).trim() === '№ сваи'; });
-        if (hasWeu && hasPile) {
-            headerRowIndex = i;
-            break;
-        }
-    }
-    if (headerRowIndex === -1) headerRowIndex = 5;
-    var headerRow = data[headerRowIndex] || [];
-    var idx = { weu: -1, pile: -1, proj: -1, date: -1, dkbs1: -1, vol1: -1, dkbs2: -1, vol2: -1, dkbs3: -1, vol3: -1, dkbs4: -1, vol4: -1,
-                p7: -1, p14: -1, p28: -1, s7: -1, s14: -1, s28: -1 };
-    headerRow.forEach(function(cell, i) {
-        var v = String(cell).trim();
-        if (v === '№ВЭУ') idx.weu = i;
-        else if (v === '№ сваи') idx.pile = i;
-        else if (v === 'м3 (проект)') idx.proj = i;
-        else if (v === 'Дата заливки') idx.date = i;
-        else if (v === 'ДКБС№' && idx.dkbs1 === -1) idx.dkbs1 = i;
-        else if (v === 'м3 (ДКБС)' && idx.vol1 === -1) idx.vol1 = i;
-        else if (v === 'ДКБС№' && idx.dkbs2 === -1) idx.dkbs2 = i;
-        else if (v === 'м3 (ДКБС)' && idx.vol2 === -1) idx.vol2 = i;
-        else if (v === 'ДКБС№' && idx.dkbs3 === -1) idx.dkbs3 = i;
-        else if (v === 'м3 (ДКБС)' && idx.vol3 === -1) idx.vol3 = i;
-        else if (v === 'ДКБС№' && idx.dkbs4 === -1) idx.dkbs4 = i;
-        else if (v === 'м3 (ДКБС)' && idx.vol4 === -1) idx.vol4 = i;
-        else if (v === '7 суток (Протокол)') idx.p7 = i;
-        else if (v === '14 суток (Протокол)') idx.p14 = i;
-        else if (v === '28 суток (Протокол)') idx.p28 = i;
-        else if (v === '7 суток (Протокол)<br>Статус') idx.s7 = i;
-        else if (v === '14 суток (Статус)') idx.s14 = i;
-        else if (v === '28 суток  (Протокол)<br>Статус') idx.s28 = i;
-    });
-    if (idx.pile === -1) idx.pile = 1;
-    if (idx.proj === -1) idx.proj = 2;
-    if (idx.date === -1) idx.date = 4;
-    if (idx.dkbs1 === -1) idx.dkbs1 = 5;
-    if (idx.vol1 === -1) idx.vol1 = 6;
-    if (idx.dkbs2 === -1) idx.dkbs2 = 7;
-    if (idx.vol2 === -1) idx.vol2 = 8;
-    if (idx.dkbs3 === -1) idx.dkbs3 = 9;
-    if (idx.vol3 === -1) idx.vol3 = 10;
-    if (idx.dkbs4 === -1) idx.dkbs4 = 11;
-    if (idx.vol4 === -1) idx.vol4 = 12;
-    if (idx.p7 === -1) idx.p7 = 15;
-    if (idx.p14 === -1) idx.p14 = 16;
-    if (idx.p28 === -1) idx.p28 = 17;
-    if (idx.s7 === -1) idx.s7 = 18;
-    if (idx.s14 === -1) idx.s14 = 19;
-    if (idx.s28 === -1) idx.s28 = 20;
-
-    var piles = [];
-    var weuNumber = '';
-    for (var r = headerRowIndex + 1; r < data.length; r++) {
-        var row = data[r];
-        var pileNum = row[idx.pile] !== undefined ? String(row[idx.pile]).trim() : '';
-        if (!pileNum) continue;
-        var projVal = parseFloat(row[idx.proj]) || 0;
-        var dateStr = excelDateToStr(row[idx.date]);
-        var dkbs = [
-            { num: row[idx.dkbs1] || '', vol: parseFloat(row[idx.vol1]) || 0 },
-            { num: row[idx.dkbs2] || '', vol: parseFloat(row[idx.vol2]) || 0 },
-            { num: row[idx.dkbs3] || '', vol: parseFloat(row[idx.vol3]) || 0 },
-            { num: row[idx.dkbs4] || '', vol: parseFloat(row[idx.vol4]) || 0 }
-        ].filter(function(d) { return d.num !== '' || d.vol !== 0; });
-        var factVol = dkbs.reduce(function(sum, d) { return sum + d.vol; }, 0);
-        var p7 = excelDateToStr(row[idx.p7]);
-        var p14 = excelDateToStr(row[idx.p14]);
-        var p28 = excelDateToStr(row[idx.p28]);
-        var s7 = String(row[idx.s7] || '').trim();
-        var s14 = String(row[idx.s14] || '').trim();
-        var s28 = String(row[idx.s28] || '').trim();
-
-        var weuFromA = row[idx.weu] ? String(row[idx.weu]).trim() : '';
-        if (weuFromA && weuFromA.startsWith('ВЭУ-')) weuNumber = weuFromA;
-
-        piles.push({
-            num: pileNum,
-            proj: projVal,
-            date: dateStr,
-            dkbs: dkbs,
-            fact: factVol,
-            p7: p7, p14: p14, p28: p28,
-            s7: s7, s14: s14, s28: s28
-        });
-    }
-    if (piles.length === 0) return null;
-    if (!weuNumber) weuNumber = 'ВЭУ-' + sheetName;
-    return { weu: weuNumber, piles: piles };
-}
-
-function processWorkbook(workbook) {
-    var sheetNames = workbook.SheetNames;
-    var weuSheets = sheetNames.filter(function(name) { return /^[1-9]$|^1[0-8]$/.test(name); }).sort(function(a,b) { return Number(a)-Number(b); });
-    if (weuSheets.length === 0) {
-        alert('Не найдены листы с номерами ВЭУ (1-18). Проверьте файл.');
-        return null;
-    }
-    var newData = [];
-    weuSheets.forEach(function(name) {
-        var sheet = workbook.Sheets[name];
-        var parsed = parseWeuSheet(sheet, name);
-        if (parsed) newData.push(parsed);
-    });
-    if (newData.length === 0) {
-        alert('Не удалось распарсить данные. Проверьте структуру файла.');
-        return null;
-    }
-    return newData;
-}
-
-function renderAll(allWeuData) {
-    var totalPoured = 0, totalPilesCount = 0;
-    var totalProjVol = 0, totalFactVol = 0;
-    var allDates = {};
-    var weuStats = [];
-    var weuVolumes = [];
-
-    var html = '';
-    allWeuData.forEach(function(weuObj) {
-        var weu = weuObj.weu;
-        var piles = weuObj.piles;
-        var weuPoured = 0;
-        var weuProjVol = 0;
-        var weuFactVol = 0;
-        var rows = '';
-
-        var validPiles = piles.filter(function(p) { return p.num && p.num !== ''; });
-        var weuTotal = validPiles.length;
-
-        validPiles.forEach(function(p) {
-            weuProjVol += p.proj;
-            weuFactVol += p.fact;
-            totalProjVol += p.proj;
-            totalFactVol += p.fact;
-
-            if (p.date && p.date !== '') {
-                weuPoured++;
-                totalPoured++;
-            }
-            totalPilesCount++;
-
-            var diff = p.fact - p.proj;
-            var diffStr = diff.toFixed(2);
-            var diffClass = diff >= 0 ? 'diff-pos' : 'diff-neg';
-
-            var dkbsStr = p.dkbs.map(function(d) { return d.num + ' (' + d.vol + ')'; }).join('; ');
-            var dkbsBtn = '<button class="dkbs-btn" onclick="showDkbs(\'' + weu + '\', ' + p.num + ', \'' + dkbsStr + '\')">📋</button>';
-
-            var dateDisplay = p.date || '—';
-
-            function getStatusLabel(val) {
-                if (val === '+') return 'На руках';
-                return val || '—';
-            }
-            function getStatusClass(val) {
-                if (val === '+') return 'status-onhand';
-                return 'status-gray';
-            }
-            function getDateStatus(dateStr, statusVal) {
-                if (!dateStr || dateStr === '') return 'status-gray';
-                if (statusVal === '+') return 'status-onhand';
-                var parts = dateStr.split('.');
-                if (parts.length !== 3) return 'status-gray';
-                var d = new Date(parts[2], parts[1]-1, parts[0]);
-                if (d.getFullYear() < 1900) return 'status-gray';
-                var now = new Date();
-                now.setHours(0,0,0,0);
-                var diffDays = Math.floor((d - now) / (86400000));
-                if (diffDays < 0) return 'status-red';
-                if (diffDays === 0) return 'status-orange';
-                if (diffDays <= 3) return 'status-yellow';
-                return 'status-gray';
-            }
-
-            var s7label = getStatusLabel(p.s7);
-            var s14label = getStatusLabel(p.s14);
-            var s28label = getStatusLabel(p.s28);
-            var s7class = getStatusClass(p.s7);
-            var s14class = getStatusClass(p.s14);
-            var s28class = getStatusClass(p.s28);
-            var p7class = getDateStatus(p.p7, p.s7);
-            var p14class = getDateStatus(p.p14, p.s14);
-            var p28class = getDateStatus(p.p28, p.s28);
-
-            rows += '<tr>' +
-                '<td class="col-svia">' + p.num + '</td>' +
-                '<td class="col-proj">' + p.proj.toFixed(2) + '</td>' +
-                '<td class="date-cell">' + dateDisplay + '</td>' +
-                '<td class="col-fact">' + p.fact.toFixed(2) + '</td>' +
-                '<td class="col-diff ' + diffClass + '">' + diffStr + '</td>' +
-                '<td>' + dkbsBtn + '</td>' +
-                '<td class="date-cell"><span class="protocol-status ' + p7class + '">' + (p.p7 || '—') + '</span></td>' +
-                '<td><span class="protocol-status ' + s7class + '">' + s7label + '</span></td>' +
-                '<td class="date-cell"><span class="protocol-status ' + p14class + '">' + (p.p14 || '—') + '</span></td>' +
-                '<td><span class="protocol-status ' + s14class + '">' + s14label + '</span></td>' +
-                '<td class="date-cell"><span class="protocol-status ' + p28class + '">' + (p.p28 || '—') + '</span></td>' +
-                '<td><span class="protocol-status ' + s28class + '">' + s28label + '</span></td>' +
-                '</tr>';
-
-            if (p.date && p.date !== '') {
-                var dateKey = p.date;
-                if (!allDates[dateKey]) allDates[dateKey] = [];
-                allDates[dateKey].push({ weu: weu, pile: p.num });
-            }
-        });
-
-        weuStats.push({ weu: weu, total: weuTotal, poured: weuPoured });
-        weuVolumes.push({ weu: weu, proj: weuProjVol, fact: weuFactVol });
-
-        html += '<div class="weu-accordion">' +
-            '<div class="weu-header" onclick="toggleWeu(this)">' +
-                '<span>' + weu + '</span>' +
-                '<span class="badge">Свай: ' + weuPoured + ' / ' + weuTotal + '</span>' +
-                '<span class="arrow">▼</span>' +
-            '</div>' +
-            '<div class="weu-body">' +
-                '<div class="weu-table-wrap">' +
-                    '<table>' +
-                        '<thead><tr>' +
-                            '<th>№ сваи</th><th>Проект, м³</th><th>Дата заливки</th><th>Факт, м³</th><th>Разница</th><th>ДКБС</th>' +
-                            '<th>7 сут (дата)</th><th>7 сут (статус)</th><th>14 сут (дата)</th><th>14 сут (статус)</th><th>28 сут (дата)</th><th>28 сут (статус)</th>' +
-                        '</tr></thead>' +
-                        '<tbody>' + rows + '</tbody>' +
-                    '</table>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
-    });
-
-    document.getElementById('weuContainer').innerHTML = html;
-
-    document.getElementById('totalPoured').textContent = totalPoured;
-    document.getElementById('totalPiles').textContent = totalPilesCount;
-    var remaining = totalPilesCount - totalPoured;
-    document.getElementById('totalDiff').textContent = remaining;
-    document.getElementById('totalDiff').style.color = remaining > 0 ? '#e65100' : '#2e7d32';
-
-    var volDiff = totalFactVol - totalProjVol;
-    document.getElementById('volumesTotal').innerHTML = '' +
-        '<div class="volumes-total-item">📐 Проектный объём: <strong class="proj">' + totalProjVol.toFixed(2) + '</strong> м³</div>' +
-        '<div class="volumes-total-item">🧱 Фактический объём: <strong class="fact">' + totalFactVol.toFixed(2) + '</strong> м³</div>' +
-        '<div class="volumes-total-item">📊 Разница: <strong class="diff">' + volDiff.toFixed(2) + '</strong> м³</div>';
-    var weuVolHtml = '';
-    weuVolumes.forEach(function(w) {
-        var diff = w.fact - w.proj;
-        var diffClass = diff >= 0 ? 'pos' : 'neg';
-        weuVolHtml += '<span class="volumes-weu-item">' +
-            '<span class="v-name">' + w.weu + '</span>: ' +
-            '<span class="v-fact">' + w.fact.toFixed(2) + '</span> / ' +
-            '<span class="v-proj">' + w.proj.toFixed(2) + '</span> ' +
-            '<span class="v-diff ' + diffClass + '">(' + (diff >= 0 ? '+' : '') + diff.toFixed(2) + ')</span>' +
-        '</span>';
-    });
-    document.getElementById('volumesWeu').innerHTML = weuVolHtml;
-
-    var sortedDates = Object.keys(allDates).sort(function(a,b) {
-        var da = a.split('.').reverse().join('');
-        var db = b.split('.').reverse().join('');
-        return da.localeCompare(db);
-    });
-    var calHtml = '';
-    sortedDates.forEach(function(dateStr) {
-        var count = allDates[dateStr].length;
-        calHtml += '<div class="calendar-day" onclick="showCalendarDetails(\'' + dateStr + '\', window.allDates)">' +
-            '<span class="date-label">' + dateStr + '</span>' +
-            '<span class="count">' + count + '</span>' +
-        '</div>';
-    });
-    document.getElementById('calendarGrid').innerHTML = calHtml || '<div style="color:#2e7d32;">Нет данных о заливках</div>';
-
-    var ringsHtml = '';
-    weuStats.forEach(function(stat) {
-        var percent = stat.total > 0 ? Math.round(stat.poured / stat.total * 100) : 0;
-        var color = percent === 100 ? '#2e7d32' : percent >= 50 ? '#f9a825' : '#ef6c00';
-        var rotation = percent / 100 * 360;
-        ringsHtml += '<div class="chart-ring-item" onclick="showPilesCircle(\'' + stat.weu + '\', window.allWeuData)">' +
-            '<div class="ring" style="background: conic-gradient(' + color + ' 0deg ' + rotation + 'deg, #e8e8e8 ' + rotation + 'deg 360deg);">' +
-                '<div class="ring-inner">' + percent + '%</div>' +
-            '</div>' +
-            '<div class="ring-label">' + stat.weu + '</div>' +
-            '<div class="ring-value">' + stat.poured + '/' + stat.total + '</div>' +
-        '</div>';
-    });
-    document.getElementById('chartRings').innerHTML = ringsHtml;
-
-    window.allWeuData = allWeuData;
-    window.allDates = allDates;
-}
-
-// Вспомогательные функции для модалок (глобальные)
-window.showCalendarDetails = function(dateStr, allDates) {
-    var details = allDates[dateStr] || [];
-    var bodyHtml = '<p style="font-size:1.1rem; margin-bottom:10px;"><strong>📅 ' + dateStr + '</strong></p>';
-    if (details.length === 0) {
-        bodyHtml += '<p>Нет данных</p>';
-    } else {
-        var grouped = {};
-        details.forEach(function(item) {
-            if (!grouped[item.weu]) grouped[item.weu] = [];
-            grouped[item.weu].push(item.pile);
-        });
-        bodyHtml += '<ul style="list-style:none; padding:0;">';
-        for (var weu in grouped) {
-            var piles = grouped[weu];
-            var pilesStr = piles.join(', ');
-            bodyHtml += '<li style="padding:4px 0; border-bottom:1px solid rgba(200,230,201,0.5);">' +
-                '<strong style="color:#1b5e20;">' + weu + '</strong>: ' + piles.length + ' свай' +
-                '<span style="color:#555; font-size:0.85rem; display:block; padding-left:10px;">№' + pilesStr + '</span>' +
-            '</li>';
-        }
-        bodyHtml += '</ul>';
-    }
-    document.getElementById('calModalTitle').textContent = '📅 Детали заливок';
-    document.getElementById('calModalBody').innerHTML = bodyHtml;
-    document.getElementById('calendarModal').classList.add('active');
-};
-
-window.showDkbs = function(weu, pileNum, dkbsStr) {
-    document.getElementById('modalTitle').textContent = weu + ' — Свая ' + pileNum;
-    var items = dkbsStr.split('; ').filter(function(s) { return s; });
-    document.getElementById('dkbsList').innerHTML = items.map(function(item) { return '<li>' + item + '</li>'; }).join('') || '<li>Нет данных</li>';
-    document.getElementById('dkbsModal').classList.add('active');
-};
-
-// ==== Обработчики загрузки ====
-function handleFile(file) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var data = new Uint8Array(e.target.result);
-        var workbook = XLSX.read(data, { type: 'array' });
-        var allWeuData = processWorkbook(workbook);
-        if (allWeuData) {
-            renderAll(allWeuData);
-            document.getElementById('dataSourceIndicator').textContent = 'Источник: вручную загруженный файл';
-            document.getElementById('dropArea').style.display = 'none';
-        }
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-// Инициализация элементов
-document.addEventListener('DOMContentLoaded', function() {
-    dropArea = document.getElementById('dropArea');
-    fileInput = document.getElementById('fileInput');
-    summary = document.getElementById('summary');
-    dataSourceIndicator = document.getElementById('dataSourceIndicator');
-
-    // События
-    dropArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.classList.add('dragover');
-    });
-    dropArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-    });
-    dropArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
-    fileInput.addEventListener('change', function(e) {
-        if (this.files.length > 0) handleFile(this.files[0]);
-        this.value = '';
-    });
-    dropArea.addEventListener('click', function() {
-        fileInput.click();
-    });
-
-    // Автоматическая загрузка с сервера
-    function tryFetchAndLoad() {
-        fetch('data.xlsx?t=' + Date.now())
-            .then(function(res) {
-                if (!res.ok) throw new Error('Файл не найден (статус ' + res.status + ')');
-                return res.arrayBuffer();
-            })
-            .then(function(data) {
-                var workbook = XLSX.read(data, { type: 'array' });
-                var allWeuData = processWorkbook(workbook);
-                if (allWeuData) {
-                    renderAll(allWeuData);
-                    dataSourceIndicator.textContent = 'Источник: data.xlsx (с сервера)';
-                } else {
-                    dataSourceIndicator.textContent = 'Ошибка парсинга, загрузите вручную';
-                    showManualUploadMessage();
-                }
-            })
-            .catch(function(err) {
-                console.warn('Не удалось загрузить data.xlsx:', err.message);
-                dataSourceIndicator.textContent = 'Файл не найден, загрузите вручную';
-                showManualUploadMessage();
-            });
-    }
-
-    function showManualUploadMessage() {
-        if (!document.getElementById('manualUploadMsg')) {
-            var msg = document.createElement('div');
-            msg.id = 'manualUploadMsg';
-            msg.style.cssText = 'color:#f9a825; padding:5px; font-size:0.9rem; width:100%; text-align:center;';
-            msg.textContent = '💡 Для загрузки данных перетащите Excel-файл в область выше или кликните на неё.';
-            summary.appendChild(msg);
-        }
-    }
-
-    tryFetchAndLoad();
-});
-
-// Автообновление в 9:30
-setInterval(function() {
-    var now = new Date();
-    if (now.getHours() === 9 && now.getMinutes() === 30) {
-        location.reload();
-    }
-}, 60000);
-
-console.log('Майская ВЭС — сайт загружен.');
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Майская ВЭС — Сваи</title>
+    <title>Майская ВЭС — Сваи, Подбетонка, Ростверк</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Oswald:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -853,6 +178,38 @@ console.log('Майская ВЭС — сайт загружен.');
         }
         #fileInput { display: none; }
 
+        /* Вкладки */
+        .tab-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid rgba(46, 125, 50, 0.2);
+            padding-bottom: 6px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 24px;
+            font-family: 'Oswald', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2e7d32;
+            cursor: pointer;
+            border-radius: 30px 30px 0 0;
+            transition: 0.2s;
+            letter-spacing: 0.5px;
+            opacity: 0.6;
+        }
+        .tab-btn:hover { opacity: 0.9; background: rgba(200, 230, 201, 0.3); }
+        .tab-btn.active {
+            opacity: 1;
+            background: rgba(200, 230, 201, 0.5);
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         .summary {
             display: flex;
             flex-wrap: wrap;
@@ -880,6 +237,7 @@ console.log('Майская ВЭС — сайт загружен.');
         .summary-item .fact { color: #1b5e20; }
         .summary-item .diff { color: #e65100; }
         .summary-item .total { color: #1b5e20; }
+        .summary-item .proj { color: #1565c0; }
 
         .main-layout {
             display: flex;
@@ -1021,7 +379,7 @@ console.log('Майская ВЭС — сайт загружен.');
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
-            min-width: 1100px;
+            min-width: 900px;
             font-family: 'Inter', sans-serif;
         }
         th {
@@ -1186,53 +544,6 @@ console.log('Майская ВЭС — сайт загружен.');
             color: #1e2a2f;
         }
 
-        /* Круговое расположение свай */
-        .piles-circle {
-            position: relative;
-            width: 450px;
-            height: 450px;
-            margin: 20px auto;
-        }
-        .pile-dot {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #fff;
-            transform: translate(-50%, -50%);
-            cursor: default;
-            text-align: center;
-            line-height: 1.1;
-            transition: transform 0.2s;
-            border: 2px solid rgba(255,255,255,0.5);
-        }
-        .pile-dot:hover {
-            transform: translate(-50%, -50%) scale(1.15);
-            z-index: 10;
-        }
-        .pile-dot.poured {
-            background: #2e7d32;
-        }
-        .pile-dot.not-poured {
-            background: #c62828;
-        }
-        .pile-dot .pile-num {
-            font-size: 0.7rem;
-            font-weight: 700;
-        }
-        .pile-dot .pile-date {
-            font-size: 0.45rem;
-            font-weight: 400;
-            opacity: 0.9;
-            margin-top: 1px;
-        }
-
         .volumes-section {
             margin-top: 30px;
             background: rgba(255,255,255,0.7);
@@ -1297,6 +608,52 @@ console.log('Майская ВЭС — сайт загружен.');
         .v-diff.pos { color: #2e7d32; }
         .v-diff.neg { color: #c62828; }
 
+        .piles-circle {
+            position: relative;
+            width: 450px;
+            height: 450px;
+            margin: 20px auto;
+        }
+        .pile-dot {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #fff;
+            transform: translate(-50%, -50%);
+            cursor: default;
+            text-align: center;
+            line-height: 1.1;
+            transition: transform 0.2s;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .pile-dot:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 10;
+        }
+        .pile-dot.poured {
+            background: #2e7d32;
+        }
+        .pile-dot.not-poured {
+            background: #c62828;
+        }
+        .pile-dot .pile-num {
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+        .pile-dot .pile-date {
+            font-size: 0.45rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 1px;
+        }
+
         .footer-note {
             margin-top: 40px;
             color: #2e7d32;
@@ -1319,19 +676,20 @@ console.log('Майская ВЭС — сайт загружен.');
             .volumes-total-item { font-size: 0.95rem; }
             .volumes-total-item strong { font-size: 1.2rem; }
             .volumes-weu-item { font-size: 0.75rem; }
-            .piles-circle { width: 300px; height: 300px; }
-            .pile-dot { width: 36px; height: 36px; font-size: 0.55rem; }
-            .pile-dot .pile-date { font-size: 0.35rem; }
             body::before {
                 font-size: 4rem;
                 transform: translate(-50%, -50%) rotate(-20deg) scale(2);
             }
+            .tab-btn { font-size: 1rem; padding: 8px 16px; }
+            .piles-circle { width: 300px; height: 300px; }
+            .pile-dot { width: 36px; height: 36px; font-size: 0.55rem; }
+            .pile-dot .pile-date { font-size: 0.35rem; }
         }
         @media (max-width: 480px) {
+            .modal-content { padding: 15px; }
             .piles-circle { width: 240px; height: 240px; }
             .pile-dot { width: 30px; height: 30px; font-size: 0.45rem; }
             .pile-dot .pile-date { display: none; }
-            .modal-content { padding: 15px; }
         }
     </style>
 </head>
@@ -1346,7 +704,7 @@ console.log('Майская ВЭС — сайт загружен.');
             <span class="header-title">⚡ Майская ВЭС</span>
         </div>
         <div class="header-right">
-            <span class="sub">Буронабивные сваи</span>
+            <span class="sub">Сваи, Подбетонка, Ростверк</span>
             <span id="dataSourceIndicator" class="data-source">Источник: —</span>
             <button class="refresh-btn" onclick="location.reload()">⟳ Обновить</button>
             <button class="upload-icon" onclick="document.getElementById('fileInput').click()" title="Загрузить новый файл">⬇</button>
@@ -1358,32 +716,92 @@ console.log('Майская ВЭС — сайт загружен.');
     </div>
     <input type="file" id="fileInput" accept=".xlsx,.xls">
 
-    <div id="summary" class="summary">
-        <div class="summary-item">🏗️ Залито свай: <strong class="fact" id="totalPoured">0</strong> / <strong class="total" id="totalPiles">0</strong></div>
-        <div class="summary-item">📊 Осталось залить: <strong class="diff" id="totalDiff">0</strong> свай</div>
+    <!-- Вкладки -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="piles">Сваи</button>
+        <button class="tab-btn" data-tab="podbetonka">Подбетонка</button>
+        <button class="tab-btn" data-tab="rostverk">Ростверк</button>
     </div>
 
-    <div class="main-layout">
-        <div class="chart-section" id="chartSection">
-            <h2>📊 Выполнение по ВЭУ (нажмите на кольцо)</h2>
-            <div id="chartRings" class="chart-rings"></div>
+    <!-- Контент: сваи -->
+    <div id="pilesContent" class="tab-content active">
+        <div id="summary" class="summary">
+            <div class="summary-item">🏗️ Залито свай: <strong class="fact" id="totalPoured">0</strong> / <strong class="total" id="totalPiles">0</strong></div>
+            <div class="summary-item">📊 Осталось залить: <strong class="diff" id="totalDiff">0</strong> свай</div>
         </div>
 
-        <div class="two-columns">
-            <div class="left-col" id="weuContainer"></div>
-            <div class="right-col">
-                <div class="calendar-section" id="calendarSection">
-                    <h2>📅 Календарь заливок</h2>
-                    <div id="calendarGrid" class="calendar-grid"></div>
+        <div class="main-layout">
+            <div class="chart-section" id="chartSection">
+                <h2>📊 Выполнение по ВЭУ (нажмите на кольцо)</h2>
+                <div id="chartRings" class="chart-rings"></div>
+            </div>
+
+            <div class="two-columns">
+                <div class="left-col" id="weuContainer"></div>
+                <div class="right-col">
+                    <div class="calendar-section" id="calendarSection">
+                        <h2>📅 Календарь заливок (сваи)</h2>
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="volumes-section" id="volumesSection">
+            <h2>🧊 Объёмы бетона (сваи)</h2>
+            <div id="volumesTotal" class="volumes-total"></div>
+            <div id="volumesWeu" class="volumes-weu"></div>
+        </div>
     </div>
 
-    <div class="volumes-section" id="volumesSection">
-        <h2>🧊 Объёмы бетона</h2>
-        <div id="volumesTotal" class="volumes-total"></div>
-        <div id="volumesWeu" class="volumes-weu"></div>
+    <!-- Контент: подбетонка -->
+    <div id="podbetonkaContent" class="tab-content">
+        <div id="podbetonkaSummary" class="summary"></div>
+        <div class="main-layout">
+            <div class="chart-section" id="podbetonkaChartSection">
+                <h2>📊 Выполнение по ВЭУ (подбетонка)</h2>
+                <div id="podbetonkaRings" class="chart-rings"></div>
+            </div>
+            <div class="two-columns">
+                <div class="left-col" id="podbetonkaContainer"></div>
+                <div class="right-col">
+                    <div class="calendar-section" id="podbetonkaCalendarSection">
+                        <h2>📅 Календарь заливок (подбетонка)</h2>
+                        <div id="podbetonkaCalendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="volumes-section" id="podbetonkaVolumesSection">
+            <h2>🧊 Объёмы бетона (подбетонка)</h2>
+            <div id="podbetonkaVolumesTotal" class="volumes-total"></div>
+            <div id="podbetonkaVolumesWeu" class="volumes-weu"></div>
+        </div>
+    </div>
+
+    <!-- Контент: ростверк -->
+    <div id="rostverkContent" class="tab-content">
+        <div id="rostverkSummary" class="summary"></div>
+        <div class="main-layout">
+            <div class="chart-section" id="rostverkChartSection">
+                <h2>📊 Выполнение по ВЭУ (ростверк)</h2>
+                <div id="rostverkRings" class="chart-rings"></div>
+            </div>
+            <div class="two-columns">
+                <div class="left-col" id="rostverkContainer"></div>
+                <div class="right-col">
+                    <div class="calendar-section" id="rostverkCalendarSection">
+                        <h2>📅 Календарь заливок (ростверк)</h2>
+                        <div id="rostverkCalendarGrid" class="calendar-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="volumes-section" id="rostverkVolumesSection">
+            <h2>🧊 Объёмы бетона (ростверк)</h2>
+            <div id="rostverkVolumesTotal" class="volumes-total"></div>
+            <div id="rostverkVolumesWeu" class="volumes-weu"></div>
+        </div>
     </div>
 
     <div class="footer-note">Данные загружены из файла. Обновление в 9:30 ежедневно.</div>
@@ -1406,7 +824,6 @@ console.log('Майская ВЭС — сайт загружен.');
     </div>
 </div>
 
-<!-- Модалка для кругового отображения свай -->
 <div id="pilesModal" class="modal">
     <div class="modal-content">
         <button class="close" onclick="closeModal('pilesModal')">&times;</button>
@@ -1416,6 +833,17 @@ console.log('Майская ВЭС — сайт загружен.');
 </div>
 
 <script>
+    // ==================== Глобальные переменные ====================
+    let allWeuData = [];
+    let podbetonkaData = [];
+    let rostverkData = [];
+    let totalPoured = 0, totalPilesCount = 0;
+    let totalProjVol = 0, totalFactVol = 0;
+    let dataSource = 'cache';
+
+    window.allWeuData = allWeuData;
+
+    // ==================== Вспомогательные функции ====================
     function toggleWeu(header) {
         const body = header.nextElementSibling;
         header.classList.toggle('open');
@@ -1426,9 +854,551 @@ console.log('Майская ВЭС — сайт загружен.');
         document.getElementById(id).classList.remove('active');
     }
 
-    // Функция для показа кругового отображения свай
-    function showPilesCircle(weuName) {
-        // Находим данные по ВЭУ
+    function excelDateToStr(excelDate) {
+        if (!excelDate || excelDate === 0) return '';
+        if (typeof excelDate === 'string') return excelDate;
+        const epoch = new Date(1899, 11, 30);
+        const d = new Date(epoch.getTime() + excelDate * 86400000);
+        if (d.getFullYear() < 1900) return '';
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
+    // Фильтр: оставляем только ВЭУ с 1 по 18
+    function isValidWeu(weuName) {
+        if (!weuName || !weuName.startsWith('ВЭУ-')) return false;
+        const num = parseInt(weuName.replace('ВЭУ-', ''));
+        return num >= 1 && num <= 18;
+    }
+
+    // ==================== Парсинг листов свай (1-20) ====================
+    function parseWeuSheet(sheet, sheetName) {
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        if (data.length < 6) return null;
+
+        let headerRowIndex = -1;
+        for (let i = 0; i < Math.min(data.length, 15); i++) {
+            const row = data[i];
+            const hasWeu = row.some(cell => String(cell).trim() === '№ВЭУ');
+            const hasPile = row.some(cell => String(cell).trim() === '№ сваи');
+            if (hasWeu && hasPile) {
+                headerRowIndex = i;
+                break;
+            }
+        }
+        if (headerRowIndex === -1) headerRowIndex = 5;
+        const headerRow = data[headerRowIndex] || [];
+        let idx = { weu: -1, pile: -1, proj: -1, date: -1, dkbs1: -1, vol1: -1, dkbs2: -1, vol2: -1, dkbs3: -1, vol3: -1, dkbs4: -1, vol4: -1,
+                    p7: -1, p14: -1, p28: -1, s7: -1, s14: -1, s28: -1 };
+        headerRow.forEach((cell, i) => {
+            const v = String(cell).trim();
+            if (v === '№ВЭУ') idx.weu = i;
+            else if (v === '№ сваи') idx.pile = i;
+            else if (v === 'м3 (проект)') idx.proj = i;
+            else if (v === 'Дата заливки') idx.date = i;
+            else if (v === 'ДКБС№' && idx.dkbs1 === -1) idx.dkbs1 = i;
+            else if (v === 'м3 (ДКБС)' && idx.vol1 === -1) idx.vol1 = i;
+            else if (v === 'ДКБС№' && idx.dkbs2 === -1) idx.dkbs2 = i;
+            else if (v === 'м3 (ДКБС)' && idx.vol2 === -1) idx.vol2 = i;
+            else if (v === 'ДКБС№' && idx.dkbs3 === -1) idx.dkbs3 = i;
+            else if (v === 'м3 (ДКБС)' && idx.vol3 === -1) idx.vol3 = i;
+            else if (v === 'ДКБС№' && idx.dkbs4 === -1) idx.dkbs4 = i;
+            else if (v === 'м3 (ДКБС)' && idx.vol4 === -1) idx.vol4 = i;
+            else if (v === '7 суток (Протокол)') idx.p7 = i;
+            else if (v === '14 суток (Протокол)') idx.p14 = i;
+            else if (v === '28 суток (Протокол)') idx.p28 = i;
+            else if (v === '7 суток (Протокол)<br>Статус') idx.s7 = i;
+            else if (v === '14 суток (Статус)') idx.s14 = i;
+            else if (v === '28 суток  (Протокол)<br>Статус') idx.s28 = i;
+        });
+        if (idx.pile === -1) idx.pile = 1;
+        if (idx.proj === -1) idx.proj = 2;
+        if (idx.date === -1) idx.date = 4;
+        if (idx.dkbs1 === -1) idx.dkbs1 = 5;
+        if (idx.vol1 === -1) idx.vol1 = 6;
+        if (idx.dkbs2 === -1) idx.dkbs2 = 7;
+        if (idx.vol2 === -1) idx.vol2 = 8;
+        if (idx.dkbs3 === -1) idx.dkbs3 = 9;
+        if (idx.vol3 === -1) idx.vol3 = 10;
+        if (idx.dkbs4 === -1) idx.dkbs4 = 11;
+        if (idx.vol4 === -1) idx.vol4 = 12;
+        if (idx.p7 === -1) idx.p7 = 15;
+        if (idx.p14 === -1) idx.p14 = 16;
+        if (idx.p28 === -1) idx.p28 = 17;
+        if (idx.s7 === -1) idx.s7 = 18;
+        if (idx.s14 === -1) idx.s14 = 19;
+        if (idx.s28 === -1) idx.s28 = 20;
+
+        const piles = [];
+        let weuNumber = '';
+        for (let r = headerRowIndex + 1; r < data.length; r++) {
+            const row = data[r];
+            const pileNum = row[idx.pile] !== undefined ? String(row[idx.pile]).trim() : '';
+            if (!pileNum) continue;
+            const projVal = parseFloat(row[idx.proj]) || 0;
+            const dateStr = excelDateToStr(row[idx.date]);
+            const dkbs = [
+                { num: row[idx.dkbs1] || '', vol: parseFloat(row[idx.vol1]) || 0 },
+                { num: row[idx.dkbs2] || '', vol: parseFloat(row[idx.vol2]) || 0 },
+                { num: row[idx.dkbs3] || '', vol: parseFloat(row[idx.vol3]) || 0 },
+                { num: row[idx.dkbs4] || '', vol: parseFloat(row[idx.vol4]) || 0 }
+            ].filter(d => d.num !== '' || d.vol !== 0);
+            const factVol = dkbs.reduce((sum, d) => sum + d.vol, 0);
+            const p7 = excelDateToStr(row[idx.p7]);
+            const p14 = excelDateToStr(row[idx.p14]);
+            const p28 = excelDateToStr(row[idx.p28]);
+            const s7 = String(row[idx.s7] || '').trim();
+            const s14 = String(row[idx.s14] || '').trim();
+            const s28 = String(row[idx.s28] || '').trim();
+
+            const weuFromA = row[idx.weu] ? String(row[idx.weu]).trim() : '';
+            if (weuFromA && weuFromA.startsWith('ВЭУ-')) weuNumber = weuFromA;
+
+            piles.push({
+                num: pileNum,
+                proj: projVal,
+                date: dateStr,
+                dkbs: dkbs,
+                fact: factVol,
+                p7, p14, p28, s7, s14, s28
+            });
+        }
+        if (piles.length === 0) return null;
+        if (!isValidWeu(weuNumber)) return null;
+        return { weu: weuNumber, piles: piles };
+    }
+
+    // ==================== Парсинг листов подбетонки и ростверка (ПРЯМЫЕ ИНДЕКСЫ) ====================
+    function parseConcreteSheet(sheet, sheetName) {
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+        if (data.length < 6) return [];
+
+        // Ищем строку с "№ВЭУ" в первом столбце
+        let headerRowIndex = -1;
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            if (row[0] && String(row[0]).trim() === '№ВЭУ') {
+                headerRowIndex = i;
+                break;
+            }
+        }
+        if (headerRowIndex === -1) {
+            console.warn('Не найден заголовок "№ВЭУ" в листе', sheetName);
+            return [];
+        }
+
+        // Используем точные индексы столбцов (как в сваях):
+        // A=0 (№ВЭУ), B=1 (м3 проект), D=3 (дата заливки)
+        // E=4 (ДКБС№1), F=5 (м3 ДКБС1), G=6 (ДКБС№2), H=7 (м3 ДКБС2), I=8, J=9, K=10, L=11
+        // O=14 (7 суток), P=15 (14 суток), Q=16 (28 суток)
+        // R=17 (статус 7), S=18 (статус 14), T=19 (статус 28)
+        const idx = {
+            weu: 0,
+            proj: 1,
+            date: 3,
+            dkbs: [4, 6, 8, 10],
+            vols: [5, 7, 9, 11],
+            p7: 14,
+            p14: 15,
+            p28: 16,
+            s7: 17,
+            s14: 18,
+            s28: 19
+        };
+
+        const result = [];
+        for (let r = headerRowIndex + 1; r < data.length; r++) {
+            const row = data[r];
+            const weu = row[0] ? String(row[0]).trim() : '';
+            if (!weu || !weu.startsWith('ВЭУ-')) continue;
+            if (!isValidWeu(weu)) continue;
+            // Пропускаем строку "ИТОГО"
+            if (weu.toUpperCase() === 'ИТОГО') continue;
+
+            const proj = parseFloat(row[1]) || 0;
+            const dateStr = excelDateToStr(row[3]);
+
+            // Собираем ДКБС из пар (E,F), (G,H), (I,J), (K,L)
+            const dkbs = [];
+            for (let i = 0; i < 4; i++) {
+                const num = row[idx.dkbs[i]] || '';
+                const vol = parseFloat(row[idx.vols[i]]) || 0;
+                if (num !== '' || vol !== 0) {
+                    dkbs.push({ num: num, vol: vol });
+                }
+            }
+
+            const fact = dkbs.reduce((sum, d) => sum + d.vol, 0);
+            const diff = fact - proj;
+            const p7 = excelDateToStr(row[14]);
+            const p14 = excelDateToStr(row[15]);
+            const p28 = excelDateToStr(row[16]);
+            const s7 = String(row[17] || '').trim();
+            const s14 = String(row[18] || '').trim();
+            const s28 = String(row[19] || '').trim();
+
+            result.push({
+                weu,
+                proj,
+                date: dateStr,
+                dkbs,
+                fact,
+                diff,
+                p7, p14, p28,
+                s7, s14, s28
+            });
+        }
+
+        console.log(`Парсинг листа "${sheetName}" (прямые индексы):`, result);
+        return result;
+    }
+
+    // ==================== Обработка книги Excel ====================
+    function processWorkbook(workbook, source = 'file') {
+        const sheetNames = workbook.SheetNames;
+        // Листы свай: только 1-18
+        const weuSheets = sheetNames.filter(name => /^[1-9]$|^1[0-8]$/.test(name)).sort((a,b) => Number(a)-Number(b));
+        if (weuSheets.length === 0) {
+            alert('Не найдены листы с номерами ВЭУ (1-18). Проверьте файл.');
+            return false;
+        }
+        const newWeuData = [];
+        weuSheets.forEach(name => {
+            const sheet = workbook.Sheets[name];
+            const parsed = parseWeuSheet(sheet, name);
+            if (parsed) newWeuData.push(parsed);
+        });
+        if (newWeuData.length === 0) {
+            alert('Не удалось распарсить данные свай. Проверьте структуру файла.');
+            return false;
+        }
+        allWeuData = newWeuData;
+        window.allWeuData = allWeuData;
+
+        const podSheet = workbook.Sheets['Подбетонка'];
+        const rostSheet = workbook.Sheets['Ростверк'];
+        podbetonkaData = podSheet ? parseConcreteSheet(podSheet, 'Подбетонка') : [];
+        rostverkData = rostSheet ? parseConcreteSheet(rostSheet, 'Ростверк') : [];
+
+        dataSource = source;
+        try {
+            localStorage.setItem('weuData', JSON.stringify(allWeuData));
+            localStorage.setItem('podbetonkaData', JSON.stringify(podbetonkaData));
+            localStorage.setItem('rostverkData', JSON.stringify(rostverkData));
+            localStorage.setItem('dataSource', source);
+        } catch (e) {}
+        renderAll();
+        return true;
+    }
+
+    // ==================== Загрузка из localStorage ====================
+    function loadFromStorage() {
+        try {
+            const storedWeu = localStorage.getItem('weuData');
+            const storedPod = localStorage.getItem('podbetonkaData');
+            const storedRost = localStorage.getItem('rostverkData');
+            const storedSource = localStorage.getItem('dataSource') || 'cache';
+            if (storedWeu) {
+                const parsed = JSON.parse(storedWeu);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    allWeuData = parsed;
+                    window.allWeuData = allWeuData;
+                }
+            }
+            if (storedPod) {
+                const parsed = JSON.parse(storedPod);
+                if (Array.isArray(parsed)) podbetonkaData = parsed;
+            }
+            if (storedRost) {
+                const parsed = JSON.parse(storedRost);
+                if (Array.isArray(parsed)) rostverkData = parsed;
+            }
+            if (allWeuData.length > 0) {
+                dataSource = storedSource;
+                renderAll();
+                return true;
+            }
+        } catch (e) {}
+        return false;
+    }
+
+    // ==================== Рендеринг ====================
+    function renderAll() {
+        window.allWeuData = allWeuData;
+        renderPiles();
+        renderConcrete('podbetonka', podbetonkaData);
+        renderConcrete('rostverk', rostverkData);
+        updateDataSourceIndicator();
+    }
+
+    // ---- Статусы (общие) ----
+    function getStatusLabel(val) {
+        if (val === '+') return 'На руках';
+        return val || '—';
+    }
+    function getStatusClass(val) {
+        if (val === '+') return 'status-onhand';
+        return 'status-gray';
+    }
+    function getDateStatus(dateStr, statusVal) {
+        if (!dateStr || dateStr === '') return 'status-gray';
+        if (statusVal === '+') return 'status-onhand';
+        const parts = dateStr.split('.');
+        if (parts.length !== 3) return 'status-gray';
+        const d = new Date(parts[2], parts[1]-1, parts[0]);
+        if (d.getFullYear() < 1900) return 'status-gray';
+        const now = new Date();
+        now.setHours(0,0,0,0);
+        const diffDays = Math.floor((d - now) / (86400000));
+        if (diffDays < 0) return 'status-red';
+        if (diffDays === 0) return 'status-orange';
+        if (diffDays <= 3) return 'status-yellow';
+        return 'status-gray';
+    }
+
+    // ---- Рендеринг свай ----
+    function renderPiles() {
+        totalPoured = 0;
+        totalPilesCount = 0;
+        totalProjVol = 0;
+        totalFactVol = 0;
+        let allDates = {};
+        let weuStats = [];
+        let weuVolumes = [];
+
+        let html = '';
+        allWeuData.forEach((weuObj) => {
+            const weu = weuObj.weu;
+            const piles = weuObj.piles;
+            let weuPoured = 0;
+            let weuProjVol = 0;
+            let weuFactVol = 0;
+            let rows = '';
+
+            const validPiles = piles.filter(p => p.num && p.num !== '');
+            const weuTotal = validPiles.length;
+
+            validPiles.forEach(p => {
+                weuProjVol += p.proj;
+                weuFactVol += p.fact;
+                totalProjVol += p.proj;
+                totalFactVol += p.fact;
+
+                if (p.date && p.date !== '') {
+                    weuPoured++;
+                    totalPoured++;
+                }
+                totalPilesCount++;
+
+                const diff = p.fact - p.proj;
+                const diffStr = diff.toFixed(2);
+                const diffClass = diff >= 0 ? 'diff-pos' : 'diff-neg';
+
+                const dkbsStr = p.dkbs.map(d => d.num + ' ('+d.vol+')').join('; ');
+                const dkbsBtn = `<button class="dkbs-btn" onclick="showDkbs('${weu}', 'Свая ${p.num}', '${dkbsStr}')">📋</button>`;
+
+                const dateDisplay = p.date || '—';
+
+                const s7label = getStatusLabel(p.s7);
+                const s14label = getStatusLabel(p.s14);
+                const s28label = getStatusLabel(p.s28);
+                const s7class = getStatusClass(p.s7);
+                const s14class = getStatusClass(p.s14);
+                const s28class = getStatusClass(p.s28);
+                const p7class = getDateStatus(p.p7, p.s7);
+                const p14class = getDateStatus(p.p14, p.s14);
+                const p28class = getDateStatus(p.p28, p.s28);
+
+                rows += `<tr>
+                    <td class="col-svia">${p.num}</td>
+                    <td class="col-proj">${p.proj.toFixed(2)}</td>
+                    <td class="date-cell">${dateDisplay}</td>
+                    <td class="col-fact">${p.fact.toFixed(2)}</td>
+                    <td class="col-diff ${diffClass}">${diffStr}</td>
+                    <td>${dkbsBtn}</td>
+                    <td class="date-cell"><span class="protocol-status ${p7class}">${p.p7 || '—'}</span></td>
+                    <td><span class="protocol-status ${s7class}">${s7label}</span></td>
+                    <td class="date-cell"><span class="protocol-status ${p14class}">${p.p14 || '—'}</span></td>
+                    <td><span class="protocol-status ${s14class}">${s14label}</span></td>
+                    <td class="date-cell"><span class="protocol-status ${p28class}">${p.p28 || '—'}</span></td>
+                    <td><span class="protocol-status ${s28class}">${s28label}</span></td>
+                </tr>`;
+
+                if (p.date && p.date !== '') {
+                    const dateKey = p.date;
+                    if (!allDates[dateKey]) allDates[dateKey] = [];
+                    allDates[dateKey].push({ weu: weu, pile: p.num });
+                }
+            });
+
+            weuStats.push({ weu, total: weuTotal, poured: weuPoured });
+            weuVolumes.push({ weu, proj: weuProjVol, fact: weuFactVol });
+
+            html += `<div class="weu-accordion">
+                <div class="weu-header" onclick="toggleWeu(this)">
+                    <span>${weu}</span>
+                    <span class="badge">Свай: ${weuPoured} / ${weuTotal}</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="weu-body">
+                    <div class="weu-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>№ сваи</th>
+                                    <th>Проект, м³</th>
+                                    <th>Дата заливки</th>
+                                    <th>Факт, м³</th>
+                                    <th>Разница</th>
+                                    <th>ДКБС</th>
+                                    <th>7 сут (дата)</th>
+                                    <th>7 сут (статус)</th>
+                                    <th>14 сут (дата)</th>
+                                    <th>14 сут (статус)</th>
+                                    <th>28 сут (дата)</th>
+                                    <th>28 сут (статус)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('weuContainer').innerHTML = html;
+        document.getElementById('totalPoured').textContent = totalPoured;
+        document.getElementById('totalPiles').textContent = totalPilesCount;
+        const remaining = totalPilesCount - totalPoured;
+        document.getElementById('totalDiff').textContent = remaining;
+        document.getElementById('totalDiff').style.color = remaining > 0 ? '#e65100' : '#2e7d32';
+
+        const volDiff = totalFactVol - totalProjVol;
+        document.getElementById('volumesTotal').innerHTML = `
+            <div class="volumes-total-item">📐 Проектный объём: <strong class="proj">${totalProjVol.toFixed(2)}</strong> м³</div>
+            <div class="volumes-total-item">🧱 Фактический объём: <strong class="fact">${totalFactVol.toFixed(2)}</strong> м³</div>
+            <div class="volumes-total-item">📊 Разница: <strong class="diff">${volDiff.toFixed(2)}</strong> м³</div>
+        `;
+
+        let weuVolHtml = '';
+        weuVolumes.forEach(w => {
+            const diff = w.fact - w.proj;
+            const diffClass = diff >= 0 ? 'pos' : 'neg';
+            weuVolHtml += `<span class="volumes-weu-item">
+                <span class="v-name">${w.weu}</span>:
+                <span class="v-fact">${w.fact.toFixed(2)}</span> /
+                <span class="v-proj">${w.proj.toFixed(2)}</span>
+                <span class="v-diff ${diffClass}">(${diff >= 0 ? '+' : ''}${diff.toFixed(2)})</span>
+            </span>`;
+        });
+        document.getElementById('volumesWeu').innerHTML = weuVolHtml || '<div style="color:#2e7d32;">Нет данных</div>';
+
+        renderCalendar('calendarGrid', allDates, 'Детали заливок (сваи)', 'piles');
+        renderRings('chartRings', weuStats, 'showPilesCircle');
+    }
+
+    // ---- Календарь (универсальный) ----
+    function renderCalendar(containerId, datesMap, modalTitle, type) {
+        const container = document.getElementById(containerId);
+        const sortedDates = Object.keys(datesMap).sort((a,b) => {
+            const da = a.split('.').reverse().join('');
+            const db = b.split('.').reverse().join('');
+            return da.localeCompare(db);
+        });
+        let html = '';
+        sortedDates.forEach(dateStr => {
+            const count = datesMap[dateStr].length;
+            html += `<div class="calendar-day" onclick="showCalendarDetails('${dateStr}', '${modalTitle}', '${type}')">
+                <span class="date-label">${dateStr}</span>
+                <span class="count">${count}</span>
+            </div>`;
+        });
+        container.innerHTML = html || '<div style="color:#2e7d32;">Нет данных о заливках</div>';
+    }
+
+    window.showCalendarDetails = function(dateStr, title, type) {
+        let details = {};
+        if (type === 'piles') {
+            allWeuData.forEach(weuObj => {
+                const weu = weuObj.weu;
+                const items = [];
+                weuObj.piles.forEach(p => {
+                    if (p.date === dateStr) {
+                        items.push('Свая ' + p.num);
+                    }
+                });
+                if (items.length > 0) {
+                    details[weu] = items;
+                }
+            });
+        } else if (type === 'podbetonka') {
+            podbetonkaData.forEach(item => {
+                if (item.date === dateStr) {
+                    if (!details[item.weu]) details[item.weu] = [];
+                    details[item.weu].push('Подбетонка');
+                }
+            });
+        } else if (type === 'rostverk') {
+            rostverkData.forEach(item => {
+                if (item.date === dateStr) {
+                    if (!details[item.weu]) details[item.weu] = [];
+                    details[item.weu].push('Ростверк');
+                }
+            });
+        }
+
+        let bodyHtml = `<p style="font-size:1.1rem; margin-bottom:10px;"><strong>📅 ${dateStr}</strong></p>`;
+        if (Object.keys(details).length === 0) {
+            bodyHtml += '<p>Нет данных</p>';
+        } else {
+            bodyHtml += '<ul style="list-style:none; padding:0;">';
+            for (const [weu, items] of Object.entries(details)) {
+                bodyHtml += `<li style="padding:4px 0; border-bottom:1px solid rgba(200, 230, 201, 0.5);">
+                    <strong style="color:#1b5e20;">${weu}</strong>: 
+                    <span style="color:#1e2a2f;">${items.length} работ</span>
+                    <span style="color:#555; font-size:0.85rem; display:block; padding-left:10px;">
+                        ${items.join(', ')}
+                    </span>
+                </li>`;
+            }
+            bodyHtml += '</ul>';
+        }
+        document.getElementById('calModalTitle').textContent = title || '📅 Детали заливок';
+        document.getElementById('calModalBody').innerHTML = bodyHtml;
+        document.getElementById('calendarModal').classList.add('active');
+    };
+
+    window.showDkbs = function(weu, itemName, dkbsStr) {
+        document.getElementById('modalTitle').textContent = `${weu} — ${itemName}`;
+        const items = dkbsStr.split('; ').filter(s => s);
+        document.getElementById('dkbsList').innerHTML = items.map(item => `<li>${item}</li>`).join('');
+        if (items.length === 0) document.getElementById('dkbsList').innerHTML = '<li>Нет данных</li>';
+        document.getElementById('dkbsModal').classList.add('active');
+    };
+
+    function renderRings(containerId, weuStats, clickHandler) {
+        const container = document.getElementById(containerId);
+        let html = '';
+        weuStats.forEach(stat => {
+            const percent = stat.total > 0 ? Math.round(stat.poured / stat.total * 100) : 0;
+            const color = percent === 100 ? '#2e7d32' : percent >= 50 ? '#f9a825' : '#ef6c00';
+            const rotation = percent / 100 * 360;
+            const clickAttr = clickHandler ? `onclick="${clickHandler}('${stat.weu}')"` : '';
+            html += `<div class="chart-ring-item" ${clickAttr} title="Нажмите для просмотра">
+                <div class="ring" style="background: conic-gradient(${color} 0deg ${rotation}deg, #e8e8e8 ${rotation}deg 360deg);">
+                    <div class="ring-inner">${percent}%</div>
+                </div>
+                <div class="ring-label">${stat.weu}</div>
+                <div class="ring-value">${stat.poured}/${stat.total}</div>
+            </div>`;
+        });
+        container.innerHTML = html || '<div style="color:#2e7d32;">Нет данных</div>';
+    }
+
+    // ---- Интерактивное поле свай (круг) ----
+    window.showPilesCircle = function(weuName) {
         let weuData = null;
         if (window.allWeuData) {
             weuData = window.allWeuData.find(w => w.weu === weuName);
@@ -1445,23 +1415,17 @@ console.log('Майская ВЭС — сайт загружен.');
         document.getElementById('pilesModalTitle').textContent = `${weuName} — Сваи (${poured}/${total})`;
         
         const container = document.getElementById('pilesModalBody');
-        
-        // Создаём круг
         let html = `<div class="piles-circle">`;
-        
-        const radius = 180; // радиус круга в пикселях
+        const radius = 180;
         const centerX = 225;
         const centerY = 225;
-        
         piles.forEach((pile, index) => {
             const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
             const x = centerX + radius * Math.cos(angle);
             const y = centerY + radius * Math.sin(angle);
-            
             const isPoured = pile.date && pile.date !== '';
             const statusClass = isPoured ? 'poured' : 'not-poured';
             const dateDisplay = isPoured ? pile.date : '';
-            
             html += `
                 <div class="pile-dot ${statusClass}" style="left: ${x}px; top: ${y}px;">
                     <span class="pile-num">${pile.num}</span>
@@ -1469,1200 +1433,293 @@ console.log('Майская ВЭС — сайт загружен.');
                 </div>
             `;
         });
-        
         html += `</div>`;
         html += `<div style="margin-top: 15px; display: flex; justify-content: center; gap: 30px; font-size: 0.9rem;">
             <span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#2e7d32; vertical-align:middle; margin-right:6px;"></span> Залито (${poured})</span>
             <span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#c62828; vertical-align:middle; margin-right:6px;"></span> Не залито (${total - poured})</span>
         </div>`;
-        
         container.innerHTML = html;
         document.getElementById('pilesModal').classList.add('active');
+    };
+
+    // ---- Общий рендеринг для подбетонки и ростверка ----
+    function renderConcrete(type, data) {
+        const prefix = type;
+        const containerId = prefix + 'Container';
+        const chartId = prefix + 'Rings';
+        const summaryId = prefix + 'Summary';
+        const volumesTotalId = prefix + 'VolumesTotal';
+        const volumesWeuId = prefix + 'VolumesWeu';
+        const calendarId = prefix + 'CalendarGrid';
+
+        const container = document.getElementById(containerId);
+        const chartContainer = document.getElementById(chartId);
+        const summaryContainer = document.getElementById(summaryId);
+        const volumesTotal = document.getElementById(volumesTotalId);
+        const volumesWeu = document.getElementById(volumesWeuId);
+        const calendarContainer = document.getElementById(calendarId);
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p style="color:#2e7d32; text-align:center;">Нет данных</p>';
+            chartContainer.innerHTML = '<div style="color:#2e7d32;">Нет данных</div>';
+            summaryContainer.innerHTML = '';
+            volumesTotal.innerHTML = '';
+            volumesWeu.innerHTML = '';
+            calendarContainer.innerHTML = '<div style="color:#2e7d32;">Нет данных о заливках</div>';
+            return;
+        }
+
+        // Группируем по ВЭУ (на случай, если несколько строк)
+        const weuMap = new Map();
+        data.forEach(item => {
+            if (!weuMap.has(item.weu)) {
+                weuMap.set(item.weu, []);
+            }
+            weuMap.get(item.weu).push(item);
+        });
+
+        let totalWeu = weuMap.size;
+        let pouredWeu = 0;
+        let totalProj = 0, totalFact = 0;
+        let weuStats = [];
+        let weuVolumes = [];
+        let allDates = {};
+
+        let html = '';
+        weuMap.forEach((items, weu) => {
+            // Объединяем все строки по ВЭУ
+            let sumProj = 0, sumFact = 0, sumDiff = 0;
+            let dateList = [];
+            let dkbsListAll = [];
+            let p7list = [], p14list = [], p28list = [], s7list = [], s14list = [], s28list = [];
+
+            items.forEach(item => {
+                sumProj += item.proj;
+                sumFact += item.fact;
+                sumDiff += item.diff;
+                if (item.date && item.date !== '') {
+                    dateList.push(item.date);
+                    if (!allDates[item.date]) allDates[item.date] = [];
+                    allDates[item.date].push(weu);
+                }
+                item.dkbs.forEach(d => {
+                    dkbsListAll.push(d);
+                });
+                if (item.p7) p7list.push(item.p7);
+                if (item.p14) p14list.push(item.p14);
+                if (item.p28) p28list.push(item.p28);
+                if (item.s7) s7list.push(item.s7);
+                if (item.s14) s14list.push(item.s14);
+                if (item.s28) s28list.push(item.s28);
+            });
+
+            const poured = dateList.length > 0;
+            if (poured) pouredWeu++;
+
+            const displayDate = dateList.length > 0 ? dateList.join('; ') : '—';
+            const dkbsStr = dkbsListAll.map(d => d.num + ' (' + d.vol.toFixed(2) + ')').join('; ');
+            const diffClass = sumDiff >= 0 ? 'diff-pos' : 'diff-neg';
+
+            // Берём первый статус и дату для 7,14,28
+            const s7 = s7list.length > 0 ? s7list[0] : '';
+            const s14 = s14list.length > 0 ? s14list[0] : '';
+            const s28 = s28list.length > 0 ? s28list[0] : '';
+            const p7 = p7list.length > 0 ? p7list[0] : '';
+            const p14 = p14list.length > 0 ? p14list[0] : '';
+            const p28 = p28list.length > 0 ? p28list[0] : '';
+
+            const s7label = getStatusLabel(s7);
+            const s14label = getStatusLabel(s14);
+            const s28label = getStatusLabel(s28);
+            const s7class = getStatusClass(s7);
+            const s14class = getStatusClass(s14);
+            const s28class = getStatusClass(s28);
+            const p7class = getDateStatus(p7, s7);
+            const p14class = getDateStatus(p14, s14);
+            const p28class = getDateStatus(p28, s28);
+
+            const dkbsBtn = `<button class="dkbs-btn" onclick="showDkbs('${weu}', '${type === 'podbetonka' ? 'Подбетонка' : 'Ростверк'}', '${dkbsStr}')">📋</button>`;
+
+            let rows = `<tr>
+                <td class="col-svia">${weu}</td>
+                <td class="col-proj">${sumProj.toFixed(2)}</td>
+                <td class="date-cell">${displayDate}</td>
+                <td>${dkbsBtn}</td>
+                <td class="col-fact">${sumFact.toFixed(2)}</td>
+                <td class="col-diff ${diffClass}">${sumDiff.toFixed(2)}</td>
+                <td class="date-cell"><span class="protocol-status ${p7class}">${p7 || '—'}</span></td>
+                <td><span class="protocol-status ${s7class}">${s7label}</span></td>
+                <td class="date-cell"><span class="protocol-status ${p14class}">${p14 || '—'}</span></td>
+                <td><span class="protocol-status ${s14class}">${s14label}</span></td>
+                <td class="date-cell"><span class="protocol-status ${p28class}">${p28 || '—'}</span></td>
+                <td><span class="protocol-status ${s28class}">${s28label}</span></td>
+            </tr>`;
+
+            totalProj += sumProj;
+            totalFact += sumFact;
+            weuStats.push({ weu, total: items.length, poured: poured ? 1 : 0 });
+            weuVolumes.push({ weu, proj: sumProj, fact: sumFact });
+
+            html += `<div class="weu-accordion">
+                <div class="weu-header" onclick="toggleWeu(this)">
+                    <span>${weu}</span>
+                    <span class="badge">${poured ? '✅ Залито' : '⏳ Не залито'}</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="weu-body">
+                    <div class="weu-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ВЭУ</th>
+                                    <th>Проект, м³</th>
+                                    <th>Дата заливки</th>
+                                    <th>ДКБС</th>
+                                    <th>Факт, м³</th>
+                                    <th>Разница</th>
+                                    <th>7 сут (дата)</th>
+                                    <th>7 сут (статус)</th>
+                                    <th>14 сут (дата)</th>
+                                    <th>14 сут (статус)</th>
+                                    <th>28 сут (дата)</th>
+                                    <th>28 сут (статус)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+
+        const totalDiff = totalFact - totalProj;
+        summaryContainer.innerHTML = `
+            <div class="summary-item">🏗️ Выполнено: <strong class="fact">${pouredWeu}</strong> / <strong class="total">${totalWeu}</strong> ВЭУ</div>
+            <div class="summary-item">📊 Осталось: <strong class="diff">${totalWeu - pouredWeu}</strong> ВЭУ</div>
+            <div class="summary-item">📐 Проектный объём: <strong class="proj">${totalProj.toFixed(2)}</strong> м³</div>
+            <div class="summary-item">🧱 Фактический объём: <strong class="fact">${totalFact.toFixed(2)}</strong> м³</div>
+            <div class="summary-item">📊 Разница: <strong class="diff">${totalDiff.toFixed(2)}</strong> м³</div>
+        `;
+
+        let weuVolHtml = '';
+        weuVolumes.forEach(w => {
+            const diff = w.fact - w.proj;
+            const diffClass = diff >= 0 ? 'pos' : 'neg';
+            weuVolHtml += `<span class="volumes-weu-item">
+                <span class="v-name">${w.weu}</span>:
+                <span class="v-fact">${w.fact.toFixed(2)}</span> /
+                <span class="v-proj">${w.proj.toFixed(2)}</span>
+                <span class="v-diff ${diffClass}">(${diff >= 0 ? '+' : ''}${diff.toFixed(2)})</span>
+            </span>`;
+        });
+        volumesWeu.innerHTML = weuVolHtml || '<div style="color:#2e7d32;">Нет данных</div>';
+
+        renderRings(chartId, weuStats, null);
+
+        const title = type === 'podbetonka' ? 'Детали заливок (подбетонка)' : 'Детали заливок (ростверк)';
+        renderCalendar(calendarId, allDates, title, type);
     }
 
-    (function() {
-        let allWeuData = [];
-        let totalPoured = 0, totalPilesCount = 0;
-        let totalProjVol = 0, totalFactVol = 0;
-        let dataSource = 'cache';
+    function updateDataSourceIndicator() {
+        const label = dataSource === 'file' ? 'из файла' : 'из кэша';
+        document.getElementById('dataSourceIndicator').textContent = 'Источник: ' + label;
+        document.getElementById('dataSourceIndicator').style.borderColor = dataSource === 'file' ? '#2e7d32' : '#f9a825';
+    }
 
-        // Делаем данные доступными глобально для showPilesCircle
-        window.allWeuData = allWeuData;
+    // ==================== Обработка загрузки файла ====================
+    function handleFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const ok = processWorkbook(workbook, 'file');
+            if (ok) {}
+        };
+        reader.readAsArrayBuffer(file);
+    }
 
-        const dropArea = document.getElementById('dropArea');
-        const fileInput = document.getElementById('fileInput');
-        const weuContainer = document.getElementById('weuContainer');
-        const totalPouredEl = document.getElementById('totalPoured');
-        const totalPilesEl = document.getElementById('totalPiles');
-        const totalDiffEl = document.getElementById('totalDiff');
-        const calendarGrid = document.getElementById('calendarGrid');
-        const chartRings = document.getElementById('chartRings');
-        const dataSourceIndicator = document.getElementById('dataSourceIndicator');
-        const volumesTotal = document.getElementById('volumesTotal');
-        const volumesWeu = document.getElementById('volumesWeu');
-
-        const dkbsModal = document.getElementById('dkbsModal');
-        const calendarModal = document.getElementById('calendarModal');
-        const pilesModal = document.getElementById('pilesModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const dkbsList = document.getElementById('dkbsList');
-        const calModalTitle = document.getElementById('calModalTitle');
-        const calModalBody = document.getElementById('calModalBody');
-
-        document.querySelectorAll('.modal').forEach(m => {
-            m.addEventListener('click', function(e) {
-                if (e.target === this) this.classList.remove('active');
-            });
+    // ==================== Инициализация вкладок ====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const tab = this.dataset.tab;
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab + 'Content').classList.add('active');
         });
+    });
 
-        function excelDateToStr(excelDate) {
-            if (!excelDate || excelDate === 0) return '';
-            if (typeof excelDate === 'string') return excelDate;
-            const epoch = new Date(1899, 11, 30);
-            const d = new Date(epoch.getTime() + excelDate * 86400000);
-            if (d.getFullYear() < 1900) return '';
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            return `${day}.${month}.${year}`;
-        }
+    // ==================== Drag & Drop и загрузка ====================
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
 
-        function parseWeuSheet(sheet, sheetName) {
-            const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (data.length < 6) return null;
+    dropArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    dropArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    dropArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) handleFile(this.files[0]);
+        this.value = '';
+    });
+    dropArea.addEventListener('click', function() {
+        fileInput.click();
+    });
 
-            let headerRowIndex = -1;
-            for (let i = 0; i < Math.min(data.length, 15); i++) {
-                const row = data[i];
-                const hasWeu = row.some(cell => String(cell).trim() === '№ВЭУ');
-                const hasPile = row.some(cell => String(cell).trim() === '№ сваи');
-                if (hasWeu && hasPile) {
-                    headerRowIndex = i;
-                    break;
-                }
-            }
-            if (headerRowIndex === -1) headerRowIndex = 5;
-            const headerRow = data[headerRowIndex] || [];
-            let idx = { weu: -1, pile: -1, proj: -1, date: -1, dkbs1: -1, vol1: -1, dkbs2: -1, vol2: -1, dkbs3: -1, vol3: -1, dkbs4: -1, vol4: -1,
-                        p7: -1, p14: -1, p28: -1, s7: -1, s14: -1, s28: -1 };
-            headerRow.forEach((cell, i) => {
-                const v = String(cell).trim();
-                if (v === '№ВЭУ') idx.weu = i;
-                else if (v === '№ сваи') idx.pile = i;
-                else if (v === 'м3 (проект)') idx.proj = i;
-                else if (v === 'Дата заливки') idx.date = i;
-                else if (v === 'ДКБС№' && idx.dkbs1 === -1) idx.dkbs1 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol1 === -1) idx.vol1 = i;
-                else if (v === 'ДКБС№' && idx.dkbs2 === -1) idx.dkbs2 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol2 === -1) idx.vol2 = i;
-                else if (v === 'ДКБС№' && idx.dkbs3 === -1) idx.dkbs3 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol3 === -1) idx.vol3 = i;
-                else if (v === 'ДКБС№' && idx.dkbs4 === -1) idx.dkbs4 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol4 === -1) idx.vol4 = i;
-                else if (v === '7 суток (Протокол)') idx.p7 = i;
-                else if (v === '14 суток (Протокол)') idx.p14 = i;
-                else if (v === '28 суток (Протокол)') idx.p28 = i;
-                else if (v === '7 суток (Протокол)<br>Статус') idx.s7 = i;
-                else if (v === '14 суток (Статус)') idx.s14 = i;
-                else if (v === '28 суток  (Протокол)<br>Статус') idx.s28 = i;
-            });
-            if (idx.pile === -1) idx.pile = 1;
-            if (idx.proj === -1) idx.proj = 2;
-            if (idx.date === -1) idx.date = 4;
-            if (idx.dkbs1 === -1) idx.dkbs1 = 5;
-            if (idx.vol1 === -1) idx.vol1 = 6;
-            if (idx.dkbs2 === -1) idx.dkbs2 = 7;
-            if (idx.vol2 === -1) idx.vol2 = 8;
-            if (idx.dkbs3 === -1) idx.dkbs3 = 9;
-            if (idx.vol3 === -1) idx.vol3 = 10;
-            if (idx.dkbs4 === -1) idx.dkbs4 = 11;
-            if (idx.vol4 === -1) idx.vol4 = 12;
-            if (idx.p7 === -1) idx.p7 = 15;
-            if (idx.p14 === -1) idx.p14 = 16;
-            if (idx.p28 === -1) idx.p28 = 17;
-            if (idx.s7 === -1) idx.s7 = 18;
-            if (idx.s14 === -1) idx.s14 = 19;
-            if (idx.s28 === -1) idx.s28 = 20;
-
-            const piles = [];
-            let weuNumber = '';
-            for (let r = headerRowIndex + 1; r < data.length; r++) {
-                const row = data[r];
-                const pileNum = row[idx.pile] !== undefined ? String(row[idx.pile]).trim() : '';
-                if (!pileNum) continue;
-                const projVal = parseFloat(row[idx.proj]) || 0;
-                const dateStr = excelDateToStr(row[idx.date]);
-                const dkbs = [
-                    { num: row[idx.dkbs1] || '', vol: parseFloat(row[idx.vol1]) || 0 },
-                    { num: row[idx.dkbs2] || '', vol: parseFloat(row[idx.vol2]) || 0 },
-                    { num: row[idx.dkbs3] || '', vol: parseFloat(row[idx.vol3]) || 0 },
-                    { num: row[idx.dkbs4] || '', vol: parseFloat(row[idx.vol4]) || 0 }
-                ].filter(d => d.num !== '' || d.vol !== 0);
-                const factVol = dkbs.reduce((sum, d) => sum + d.vol, 0);
-                const p7 = excelDateToStr(row[idx.p7]);
-                const p14 = excelDateToStr(row[idx.p14]);
-                const p28 = excelDateToStr(row[idx.p28]);
-                const s7 = String(row[idx.s7] || '').trim();
-                const s14 = String(row[idx.s14] || '').trim();
-                const s28 = String(row[idx.s28] || '').trim();
-
-                const weuFromA = row[idx.weu] ? String(row[idx.weu]).trim() : '';
-                if (weuFromA && weuFromA.startsWith('ВЭУ-')) weuNumber = weuFromA;
-
-                piles.push({
-                    num: pileNum,
-                    proj: projVal,
-                    date: dateStr,
-                    dkbs: dkbs,
-                    fact: factVol,
-                    p7, p14, p28, s7, s14, s28
-                });
-            }
-            if (piles.length === 0) return null;
-            if (!weuNumber) weuNumber = 'ВЭУ-' + sheetName;
-            return { weu: weuNumber, piles: piles };
-        }
-
-        function processWorkbook(workbook, source = 'file') {
-            const sheetNames = workbook.SheetNames;
-            const weuSheets = sheetNames.filter(name => /^[1-9]$|^1[0-8]$/.test(name)).sort((a,b) => Number(a)-Number(b));
-            if (weuSheets.length === 0) {
-                alert('Не найдены листы с номерами ВЭУ (1-18). Проверьте файл.');
-                return false;
-            }
-            const newData = [];
-            weuSheets.forEach(name => {
-                const sheet = workbook.Sheets[name];
-                const parsed = parseWeuSheet(sheet, name);
-                if (parsed) newData.push(parsed);
-            });
-            if (newData.length === 0) {
-                alert('Не удалось распарсить данные. Проверьте структуру файла.');
-                return false;
-            }
-            allWeuData = newData;
-            window.allWeuData = allWeuData;
-            dataSource = source;
-            try {
-                localStorage.setItem('weuData', JSON.stringify(allWeuData));
-                localStorage.setItem('dataSource', source);
-            } catch (e) {}
-            renderAll();
-            return true;
-        }
-
-        function loadFromStorage() {
-            try {
-                const stored = localStorage.getItem('weuData');
-                const storedSource = localStorage.getItem('dataSource') || 'cache';
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        allWeuData = parsed;
-                        window.allWeuData = allWeuData;
-                        dataSource = storedSource;
-                        renderAll();
-                        return true;
-                    }
-                }
-            } catch (e) {}
-            return false;
-        }
-
-        function renderAll() {
-            totalPoured = 0;
-            totalPilesCount = 0;
-            totalProjVol = 0;
-            totalFactVol = 0;
-            let allDates = {};
-            let weuStats = [];
-            let weuVolumes = [];
-
-            let html = '';
-            allWeuData.forEach((weuObj) => {
-                const weu = weuObj.weu;
-                const piles = weuObj.piles;
-                let weuPoured = 0;
-                let weuProjVol = 0;
-                let weuFactVol = 0;
-                let rows = '';
-
-                const validPiles = piles.filter(p => p.num && p.num !== '');
-                const weuTotal = validPiles.length;
-
-                validPiles.forEach(p => {
-                    weuProjVol += p.proj;
-                    weuFactVol += p.fact;
-                    totalProjVol += p.proj;
-                    totalFactVol += p.fact;
-
-                    if (p.date && p.date !== '') {
-                        weuPoured++;
-                        totalPoured++;
-                    }
-                    totalPilesCount++;
-
-                    const diff = p.fact - p.proj;
-                    const diffStr = diff.toFixed(2);
-                    const diffClass = diff >= 0 ? 'diff-pos' : 'diff-neg';
-
-                    const dkbsStr = p.dkbs.map(d => d.num + ' ('+d.vol+')').join('; ');
-                    const dkbsBtn = `<button class="dkbs-btn" onclick="showDkbs('${weu}', ${p.num}, '${dkbsStr}')">📋</button>`;
-
-                    const dateDisplay = p.date || '—';
-
-                    function getStatusLabel(val) {
-                        if (val === '+') return 'На руках';
-                        return val || '—';
-                    }
-                    function getStatusClass(val) {
-                        if (val === '+') return 'status-onhand';
-                        return 'status-gray';
-                    }
-                    function getDateStatus(dateStr, statusVal) {
-                        if (!dateStr || dateStr === '') return 'status-gray';
-                        if (statusVal === '+') return 'status-onhand';
-                        const parts = dateStr.split('.');
-                        if (parts.length !== 3) return 'status-gray';
-                        const d = new Date(parts[2], parts[1]-1, parts[0]);
-                        if (d.getFullYear() < 1900) return 'status-gray';
-                        const now = new Date();
-                        now.setHours(0,0,0,0);
-                        const diffDays = Math.floor((d - now) / (86400000));
-                        if (diffDays < 0) return 'status-red';
-                        if (diffDays === 0) return 'status-orange';
-                        if (diffDays <= 3) return 'status-yellow';
-                        return 'status-gray';
-                    }
-
-                    const s7label = getStatusLabel(p.s7);
-                    const s14label = getStatusLabel(p.s14);
-                    const s28label = getStatusLabel(p.s28);
-                    const s7class = getStatusClass(p.s7);
-                    const s14class = getStatusClass(p.s14);
-                    const s28class = getStatusClass(p.s28);
-                    const p7class = getDateStatus(p.p7, p.s7);
-                    const p14class = getDateStatus(p.p14, p.s14);
-                    const p28class = getDateStatus(p.p28, p.s28);
-
-                    rows += `<tr>
-                        <td class="col-svia">${p.num}</td>
-                        <td class="col-proj">${p.proj.toFixed(2)}</td>
-                        <td class="date-cell">${dateDisplay}</td>
-                        <td class="col-fact">${p.fact.toFixed(2)}</td>
-                        <td class="col-diff ${diffClass}">${diffStr}</td>
-                        <td>${dkbsBtn}</td>
-                        <td class="date-cell"><span class="protocol-status ${p7class}">${p.p7 || '—'}</span></td>
-                        <td><span class="protocol-status ${s7class}">${s7label}</span></td>
-                        <td class="date-cell"><span class="protocol-status ${p14class}">${p.p14 || '—'}</span></td>
-                        <td><span class="protocol-status ${s14class}">${s14label}</span></td>
-                        <td class="date-cell"><span class="protocol-status ${p28class}">${p.p28 || '—'}</span></td>
-                        <td><span class="protocol-status ${s28class}">${s28label}</span></td>
-                    </tr>`;
-
-                    if (p.date && p.date !== '') {
-                        const dateKey = p.date;
-                        if (!allDates[dateKey]) allDates[dateKey] = [];
-                        allDates[dateKey].push({ weu: weu, pile: p.num });
-                    }
-                });
-
-                weuStats.push({ weu, total: weuTotal, poured: weuPoured });
-                weuVolumes.push({ weu, proj: weuProjVol, fact: weuFactVol });
-
-                html += `<div class="weu-accordion">
-                    <div class="weu-header" onclick="toggleWeu(this)">
-                        <span>${weu}</span>
-                        <span class="badge">Свай: ${weuPoured} / ${weuTotal}</span>
-                        <span class="arrow">▼</span>
-                    </div>
-                    <div class="weu-body">
-                        <div class="weu-table-wrap">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>№ сваи</th>
-                                        <th>Проект, м³</th>
-                                        <th>Дата заливки</th>
-                                        <th>Факт, м³</th>
-                                        <th>Разница</th>
-                                        <th>ДКБС</th>
-                                        <th>7 сут (дата)</th>
-                                        <th>7 сут (статус)</th>
-                                        <th>14 сут (дата)</th>
-                                        <th>14 сут (статус)</th>
-                                        <th>28 сут (дата)</th>
-                                        <th>28 сут (статус)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${rows}</tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>`;
-            });
-
-            weuContainer.innerHTML = html;
-
-            totalPouredEl.textContent = totalPoured;
-            totalPilesEl.textContent = totalPilesCount;
-            const remaining = totalPilesCount - totalPoured;
-            totalDiffEl.textContent = remaining;
-            totalDiffEl.style.color = remaining > 0 ? '#e65100' : '#2e7d32';
-
-            const volDiff = totalFactVol - totalProjVol;
-            volumesTotal.innerHTML = `
-                <div class="volumes-total-item">📐 Проектный объём: <strong class="proj">${totalProjVol.toFixed(2)}</strong> м³</div>
-                <div class="volumes-total-item">🧱 Фактический объём: <strong class="fact">${totalFactVol.toFixed(2)}</strong> м³</div>
-                <div class="volumes-total-item">📊 Разница: <strong class="diff">${volDiff.toFixed(2)}</strong> м³</div>
-            `;
-
-            let weuVolHtml = '';
-            weuVolumes.forEach(w => {
-                const diff = w.fact - w.proj;
-                const diffClass = diff >= 0 ? 'pos' : 'neg';
-                weuVolHtml += `<span class="volumes-weu-item">
-                    <span class="v-name">${w.weu}</span>:
-                    <span class="v-fact">${w.fact.toFixed(2)}</span> /
-                    <span class="v-proj">${w.proj.toFixed(2)}</span>
-                    <span class="v-diff ${diffClass}">(${diff >= 0 ? '+' : ''}${diff.toFixed(2)})</span>
-                </span>`;
-            });
-            volumesWeu.innerHTML = weuVolHtml || '<div style="color:#2e7d32;">Нет данных</div>';
-
-            renderCalendar(allDates);
-            renderRings(weuStats);
-
-            const label = dataSource === 'file' ? 'из файла' : 'из кэша';
-            dataSourceIndicator.textContent = 'Источник: ' + label;
-            dataSourceIndicator.style.borderColor = dataSource === 'file' ? '#2e7d32' : '#f9a825';
-        }
-
-        function renderCalendar(datesMap) {
-            const sortedDates = Object.keys(datesMap).sort((a,b) => {
-                const da = a.split('.').reverse().join('');
-                const db = b.split('.').reverse().join('');
-                return da.localeCompare(db);
-            });
-            let html = '';
-            sortedDates.forEach(dateStr => {
-                const count = datesMap[dateStr].length;
-                html += `<div class="calendar-day" onclick="showCalendarDetails('${dateStr}')">
-                    <span class="date-label">${dateStr}</span>
-                    <span class="count">${count}</span>
-                </div>`;
-            });
-            calendarGrid.innerHTML = html || '<div style="color:#2e7d32;">Нет данных о заливках</div>';
-        }
-
-        window.showCalendarDetails = function(dateStr) {
-            const details = {};
-            allWeuData.forEach(weuObj => {
-                const weu = weuObj.weu;
-                const pilesForDate = [];
-                weuObj.piles.forEach(p => {
-                    if (p.date === dateStr) {
-                        pilesForDate.push(p.num);
-                    }
-                });
-                if (pilesForDate.length > 0) {
-                    details[weu] = pilesForDate;
-                }
-            });
-            
-            let bodyHtml = `<p style="font-size:1.1rem; margin-bottom:10px;"><strong>📅 ${dateStr}</strong></p>`;
-            
-            if (Object.keys(details).length === 0) {
-                bodyHtml += '<p>Нет данных</p>';
-            } else {
-                bodyHtml += '<ul style="list-style:none; padding:0;">';
-                for (const [weu, piles] of Object.entries(details)) {
-                    const pilesStr = piles.join(', ');
-                    bodyHtml += `<li style="padding:4px 0; border-bottom:1px solid rgba(200, 230, 201, 0.5);">
-                        <strong style="color:#1b5e20;">${weu}</strong>: 
-                        <span style="color:#1e2a2f;">${piles.length} свай</span>
-                        <span style="color:#555; font-size:0.85rem; display:block; padding-left:10px;">
-                            №${pilesStr}
-                        </span>
-                    </li>`;
-                }
-                bodyHtml += '</ul>';
-            }
-            
-            calModalTitle.textContent = '📅 Детали заливок';
-            calModalBody.innerHTML = bodyHtml;
-            calendarModal.classList.add('active');
-        };
-
-        window.showDkbs = function(weu, pileNum, dkbsStr) {
-            modalTitle.textContent = `${weu} — Свая ${pileNum}`;
-            const items = dkbsStr.split('; ').filter(s => s);
-            dkbsList.innerHTML = items.map(item => `<li>${item}</li>`).join('');
-            if (items.length === 0) dkbsList.innerHTML = '<li>Нет данных</li>';
-            dkbsModal.classList.add('active');
-        };
-
-        function renderRings(weuStats) {
-            let html = '';
-            weuStats.forEach(stat => {
-                const percent = stat.total > 0 ? Math.round(stat.poured / stat.total * 100) : 0;
-                const color = percent === 100 ? '#2e7d32' : percent >= 50 ? '#f9a825' : '#ef6c00';
-                const rotation = percent / 100 * 360;
-                
-                html += `<div class="chart-ring-item" onclick="showPilesCircle('${stat.weu}')" title="Нажмите для просмотра свай">
-                    <div class="ring" style="background: conic-gradient(${color} 0deg ${rotation}deg, #e8e8e8 ${rotation}deg 360deg);">
-                        <div class="ring-inner">${percent}%</div>
-                    </div>
-                    <div class="ring-label">${stat.weu}</div>
-                    <div class="ring-value">${stat.poured}/${stat.total}</div>
-                </div>`;
-            });
-            chartRings.innerHTML = html || '<div style="color:#2e7d32;">Нет данных</div>';
-        }
-
-        function handleFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
+    // ==================== Попытка загрузить data.xlsx ====================
+    function tryFetchAndLoad() {
+        fetch('data.xlsx?t=' + Date.now())
+            .then(res => {
+                if (!res.ok) throw new Error('Файл data.xlsx не найден (статус ' + res.status + ')');
+                return res.arrayBuffer();
+            })
+            .then(data => {
                 const workbook = XLSX.read(data, { type: 'array' });
                 const ok = processWorkbook(workbook, 'file');
-                if (ok) {}
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        dropArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-        dropArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-        });
-        dropArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', function(e) {
-            if (this.files.length > 0) handleFile(this.files[0]);
-            this.value = '';
-        });
-        dropArea.addEventListener('click', function() {
-            fileInput.click();
-        });
-
-        function tryFetchAndLoad() {
-            fetch('data.xlsx?t=' + Date.now())
-                .then(res => {
-                    if (!res.ok) throw new Error('Файл data.xlsx не найден (статус ' + res.status + ')');
-                    return res.arrayBuffer();
-                })
-                .then(data => {
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const ok = processWorkbook(workbook, 'file');
-                    if (ok) {
-                        console.log('Данные успешно загружены из data.xlsx');
-                    } else {
-                        if (!loadFromStorage()) {
-                            alert('Не удалось загрузить данные. Пожалуйста, выберите файл вручную.');
-                        }
-                    }
-                })
-                .catch(err => {
-                    console.warn('Не удалось загрузить data.xlsx:', err.message);
-                    if (!loadFromStorage()) {
-                        document.getElementById('summary').innerHTML =
-                            document.getElementById('summary').innerHTML +
-                            '<div style="color:#c62828; padding:10px; width:100%; text-align:center;">⚠️ Не удалось загрузить data.xlsx. Пожалуйста, выберите файл вручную.</div>';
-                        setTimeout(() => {
-                            fileInput.click();
-                        }, 500);
-                    }
-                });
-        }
-
-        window.addEventListener('load', function() {
-            tryFetchAndLoad();
-        });
-
-        setInterval(function() {
-            const now = new Date();
-            if (now.getHours() === 9 && now.getMinutes() === 30) {
-                location.reload();
-            }
-        }, 60000);
-
-        console.log('Майская ВЭС — сайт загружен. Работает с кэшем и fetch.');
-    })();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <title>Майская ВЭС — Сваи</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&family=Oswald:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* Стили (сокращённые, но полные) */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #e8f5e9; color: #1e2a2f; padding: 20px; font-family: 'Inter', sans-serif; min-height: 100vh; }
-        .wrapper { max-width: 1600px; margin: 0 auto; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); border-radius: 24px; padding: 25px; box-shadow: 0 8px 40px rgba(0,0,0,0.06); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid rgba(46,125,50,0.3); padding-bottom: 12px; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
-        .logo-block { display: flex; align-items: center; gap: 12px; }
-        .logo-icon { font-size: 2.4rem; font-weight: 800; font-family: 'Oswald', sans-serif; color: #1b5e20; }
-        .logo-icon small { display: block; font-size: 0.6rem; font-family: 'Inter', sans-serif; font-weight: 300; letter-spacing: 3px; color: #2e7d32; text-transform: uppercase; margin-top: -2px; }
-        .header-title { font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700; letter-spacing: 2px; color: #1b5e20; text-transform: uppercase; }
-        .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-        .header .sub { font-family: 'Inter', sans-serif; font-size: 1rem; color: #2e7d32; background: rgba(200,230,201,0.7); padding: 6px 20px; border-radius: 40px; border: 1px solid rgba(46,125,50,0.2); }
-        .data-source { font-size: 0.8rem; color: #555; background: rgba(255,255,255,0.5); padding: 4px 14px; border-radius: 30px; border: 1px solid #ccc; }
-        .refresh-btn { background: rgba(46,125,50,0.15); border: 1px solid rgba(46,125,50,0.2); color: #1b5e20; padding: 6px 16px; border-radius: 40px; cursor: pointer; font-size: 0.9rem; }
-        .refresh-btn:hover { background: rgba(46,125,50,0.25); }
-        #dropArea { border: 1px dashed rgba(46,125,50,0.15); border-radius: 12px; padding: 4px 12px; text-align: center; color: rgba(46,125,50,0.2); background: transparent; margin-bottom: 20px; cursor: pointer; width: fit-content; margin-left: auto; margin-right: auto; font-size: 0.7rem; }
-        #dropArea:hover { border-color: rgba(46,125,50,0.3); color: rgba(46,125,50,0.4); }
-        #dropArea.dragover { border-color: #2e7d32; background: rgba(165,214,167,0.15); color: #1b5e20; }
-        #fileInput { display: none; }
-        .summary { display: flex; flex-wrap: wrap; gap: 30px 60px; background: rgba(255,255,255,0.7); padding: 14px 30px; border-radius: 16px; margin-bottom: 25px; border-left: 6px solid #2e7d32; align-items: center; justify-content: center; }
-        .summary-item { font-size: 1.1rem; }
-        .summary-item strong { font-family: 'Oswald', sans-serif; font-size: 1.8rem; }
-        .summary-item .fact { color: #1b5e20; }
-        .summary-item .diff { color: #e65100; }
-        .summary-item .total { color: #1b5e20; }
-        .chart-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); margin-bottom: 25px; }
-        .chart-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
-        .chart-rings { display: flex; flex-wrap: wrap; gap: 30px 40px; justify-content: center; }
-        .chart-ring-item { display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; }
-        .chart-ring-item:hover { transform: scale(1.05); }
-        .ring { width: 80px; height: 80px; border-radius: 50%; position: relative; display: flex; align-items: center; justify-content: center; background: #e8e8e8; }
-        .ring-inner { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.85); display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 700; color: #1b5e20; position: relative; z-index: 2; pointer-events: none; }
-        .ring-label { font-size: 0.7rem; font-weight: 600; color: #1e2a2f; margin-top: 6px; }
-        .ring-value { font-size: 0.6rem; color: #555; margin-top: 2px; }
-        .two-columns { display: flex; gap: 25px; flex-wrap: wrap; }
-        .left-col { flex: 2; min-width: 300px; }
-        .right-col { flex: 1; min-width: 280px; }
-        .weu-accordion { background: rgba(255,255,255,0.7); border-radius: 12px; margin-bottom: 12px; border: 1px solid rgba(165,214,167,0.4); overflow: hidden; }
-        .weu-header { background: rgba(200,230,201,0.5); padding: 14px 22px; font-family: 'Oswald', sans-serif; font-size: 1.6rem; font-weight: 600; color: #1b5e20; border-bottom: 2px solid rgba(165,214,167,0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .weu-header:hover { background: rgba(165,214,167,0.4); }
-        .weu-header .badge { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 0.95rem; background: rgba(255,255,255,0.6); padding: 4px 18px; border-radius: 40px; color: #1b5e20; }
-        .weu-header .arrow { font-size: 1.2rem; transition: 0.2s; color: #2e7d32; }
-        .weu-header.open .arrow { transform: rotate(180deg); }
-        .weu-body { display: none; padding: 5px 0; overflow-x: auto; }
-        .weu-body.open { display: block; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 1100px; }
-        th { background: rgba(200,230,201,0.4); color: #1b5e20; font-weight: 600; padding: 8px 6px; border-bottom: 2px solid rgba(165,214,167,0.3); text-align: center; font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 6px 4px; border-bottom: 1px solid rgba(200,230,201,0.3); text-align: center; background: rgba(255,255,255,0.4); }
-        tr:hover td { background: rgba(200,230,201,0.3); }
-        .col-svia { font-weight: 600; color: #1b5e20; }
-        .col-proj { color: #1565c0; font-weight: 500; }
-        .col-fact { color: #1b5e20; font-weight: 500; }
-        .col-diff { font-weight: 700; }
-        .diff-pos { color: #2e7d32; }
-        .diff-neg { color: #c62828; }
-        .date-cell { font-family: 'Fira Code', monospace; font-size: 0.75rem; color: #1e2a2f; }
-        .protocol-status { display: inline-block; padding: 2px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; min-width: 60px; }
-        .status-onhand { background: #2e7d32; color: #fff; }
-        .status-red { background: #c62828; color: #fff; }
-        .status-orange { background: #ef6c00; color: #fff; }
-        .status-yellow { background: #f9a825; color: #000; }
-        .status-gray { background: #bdbdbd; color: #424242; }
-        .dkbs-btn { background: rgba(165,214,167,0.6); border: none; color: #1b5e20; padding: 2px 14px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-        .dkbs-btn:hover { background: #81c784; }
-        .calendar-section { background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
-        .calendar-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; }
-        .calendar-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .calendar-day { background: rgba(200,230,201,0.5); border-radius: 8px; padding: 8px 12px; cursor: pointer; border: 1px solid rgba(165,214,167,0.3); min-width: 85px; text-align: center; }
-        .calendar-day:hover { background: rgba(165,214,167,0.5); border-color: #2e7d32; }
-        .calendar-day .count { display: block; font-family: 'Oswald', sans-serif; font-weight: 700; color: #1b5e20; font-size: 1.2rem; }
-        .calendar-day .date-label { color: #1e2a2f; font-size: 0.85rem; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: #fff; padding: 25px 35px; border-radius: 20px; max-width: 700px; width: 95%; border-left: 6px solid #2e7d32; max-height: 90vh; overflow-y: auto; }
-        .modal-content h3 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 1.6rem; text-align: center; }
-        .modal-content .close { float: right; background: none; border: none; color: #757575; font-size: 2rem; cursor: pointer; }
-        .modal-content .close:hover { color: #c62828; }
-        .dkbs-list { list-style: none; padding: 0; font-family: 'Fira Code', monospace; font-size: 0.9rem; }
-        .dkbs-list li { padding: 5px 0; border-bottom: 1px solid rgba(200,230,201,0.5); }
-        .piles-circle { position: relative; width: 450px; height: 450px; margin: 20px auto; }
-        .pile-dot { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 600; color: #fff; transform: translate(-50%, -50%); cursor: default; text-align: center; line-height: 1.1; border: 2px solid rgba(255,255,255,0.5); }
-        .pile-dot:hover { transform: translate(-50%, -50%) scale(1.15); z-index: 10; }
-        .pile-dot.poured { background: #2e7d32; }
-        .pile-dot.not-poured { background: #c62828; }
-        .pile-dot .pile-num { font-size: 0.7rem; font-weight: 700; }
-        .pile-dot .pile-date { font-size: 0.45rem; font-weight: 400; opacity: 0.9; margin-top: 1px; }
-        .volumes-section { margin-top: 30px; background: rgba(255,255,255,0.7); border-radius: 16px; padding: 20px; border: 1px solid rgba(165,214,167,0.4); }
-        .volumes-section h2 { font-family: 'Oswald', sans-serif; color: #1b5e20; margin-bottom: 15px; font-size: 2rem; border-bottom: 2px solid rgba(200,230,201,0.5); padding-bottom: 10px; text-align: center; }
-        .volumes-total { display: flex; flex-wrap: wrap; gap: 20px 50px; justify-content: center; padding: 10px 0 20px 0; border-bottom: 2px solid rgba(200,230,201,0.4); margin-bottom: 15px; }
-        .volumes-total-item { font-size: 1.1rem; }
-        .volumes-total-item strong { font-family: 'Oswald', sans-serif; font-size: 1.6rem; }
-        .volumes-total-item .proj { color: #1565c0; }
-        .volumes-total-item .fact { color: #1b5e20; }
-        .volumes-total-item .diff { color: #e65100; }
-        .volumes-weu { display: flex; flex-wrap: wrap; gap: 10px 25px; justify-content: center; }
-        .volumes-weu-item { background: rgba(200,230,201,0.25); padding: 6px 16px; border-radius: 12px; font-size: 0.9rem; white-space: nowrap; }
-        .volumes-weu-item .v-name { font-weight: 600; color: #1b5e20; }
-        .volumes-weu-item .v-proj { color: #1565c0; }
-        .volumes-weu-item .v-fact { color: #1b5e20; }
-        .volumes-weu-item .v-diff { font-weight: 600; }
-        .v-diff.pos { color: #2e7d32; }
-        .v-diff.neg { color: #c62828; }
-        @media (max-width: 768px) {
-            .header-title { font-size: 2rem; }
-            .logo-icon { font-size: 1.8rem; }
-            .summary-item { font-size: 0.95rem; }
-            .weu-header { font-size: 1.3rem; }
-            .two-columns { flex-direction: column; }
-            .chart-ring-item { width: 80px; }
-            .ring { width: 65px; height: 65px; }
-            .ring-inner { width: 45px; height: 45px; font-size: 1rem; }
-            .piles-circle { width: 300px; height: 300px; }
-            .pile-dot { width: 36px; height: 36px; font-size: 0.55rem; }
-            .pile-dot .pile-date { font-size: 0.35rem; }
-            .volumes-total-item { font-size: 0.95rem; }
-            .volumes-total-item strong { font-size: 1.2rem; }
-            .volumes-weu-item { font-size: 0.75rem; }
-        }
-        @media (max-width: 480px) {
-            .piles-circle { width: 240px; height: 240px; }
-            .pile-dot { width: 30px; height: 30px; font-size: 0.45rem; }
-            .pile-dot .pile-date { display: none; }
-            .modal-content { padding: 15px; }
-        }
-    </style>
-</head>
-<body>
-<div class="wrapper">
-    <div class="header">
-        <div class="logo-block">
-            <div class="logo-icon">НАВИГАТОР<small>строительство</small></div>
-            <span class="header-title">⚡ Майская ВЭС</span>
-        </div>
-        <div class="header-right">
-            <span class="sub">Буронабивные сваи</span>
-            <span id="dataSourceIndicator" class="data-source">Источник: файл</span>
-            <button class="refresh-btn" onclick="location.reload()">⟳ Обновить</button>
-        </div>
-    </div>
-
-    <div id="dropArea">
-        <span class="hint">Перетащите Excel-файл или кликните</span>
-    </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls">
-
-    <div id="summary" class="summary">
-        <div class="summary-item">🏗️ Залито свай: <strong class="fact" id="totalPoured">0</strong> / <strong class="total" id="totalPiles">0</strong></div>
-        <div class="summary-item">📊 Осталось залить: <strong class="diff" id="totalDiff">0</strong> свай</div>
-    </div>
-
-    <div class="chart-section">
-        <h2>📊 Выполнение по ВЭУ (нажмите на кольцо)</h2>
-        <div id="chartRings" class="chart-rings"></div>
-    </div>
-
-    <div class="two-columns">
-        <div class="left-col" id="weuContainer"></div>
-        <div class="right-col">
-            <div class="calendar-section">
-                <h2>📅 Календарь заливок</h2>
-                <div id="calendarGrid" class="calendar-grid"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="volumes-section">
-        <h2>🧊 Объёмы бетона</h2>
-        <div id="volumesTotal" class="volumes-total"></div>
-        <div id="volumesWeu" class="volumes-weu"></div>
-    </div>
-</div>
-
-<!-- Модалки -->
-<div id="dkbsModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('dkbsModal')">&times;</button><h3 id="modalTitle">ДКБС</h3><ul id="dkbsList" class="dkbs-list"></ul></div></div>
-<div id="calendarModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('calendarModal')">&times;</button><h3 id="calModalTitle">Детали заливок</h3><div id="calModalBody" style="color:#1e2a2f; font-size:1rem;"></div></div></div>
-<div id="pilesModal" class="modal"><div class="modal-content"><button class="close" onclick="closeModal('pilesModal')">&times;</button><h3 id="pilesModalTitle">Сваи ВЭУ</h3><div id="pilesModalBody" style="color:#1e2a2f; font-size:1rem; text-align:center;"></div></div></div>
-
-<script>
-    // ===== ЕДИНСТВЕННЫЙ БЛОК СКРИПТА (БЕЗ ДУБЛИРОВАНИЯ) =====
-    (function() {
-        // Основные функции
-        function toggleWeu(header) {
-            const body = header.nextElementSibling;
-            header.classList.toggle('open');
-            body.classList.toggle('open');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-        }
-
-        function showPilesCircle(weuName, allData) {
-            const weuData = allData.find(w => w.weu === weuName);
-            if (!weuData || !weuData.piles || weuData.piles.length === 0) {
-                alert('Нет данных по ВЭУ ' + weuName);
-                return;
-            }
-            const piles = weuData.piles;
-            const total = piles.length;
-            const poured = piles.filter(p => p.date && p.date !== '').length;
-
-            document.getElementById('pilesModalTitle').textContent = `${weuName} — Сваи (${poured}/${total})`;
-            const container = document.getElementById('pilesModalBody');
-            const radius = 180, centerX = 225, centerY = 225;
-            let html = `<div class="piles-circle">`;
-            piles.forEach((pile, index) => {
-                const angle = (index / total) * 2 * Math.PI - Math.PI / 2;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-                const isPoured = pile.date && pile.date !== '';
-                const statusClass = isPoured ? 'poured' : 'not-poured';
-                const dateDisplay = isPoured ? pile.date : '';
-                html += `<div class="pile-dot ${statusClass}" style="left:${x}px; top:${y}px;">
-                            <span class="pile-num">${pile.num}</span>
-                            <span class="pile-date">${dateDisplay}</span>
-                        </div>`;
-            });
-            html += `</div><div style="margin-top:15px; display:flex; justify-content:center; gap:30px; font-size:0.9rem;">
-                        <span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#2e7d32; vertical-align:middle; margin-right:6px;"></span> Залито (${poured})</span>
-                        <span><span style="display:inline-block; width:16px; height:16px; border-radius:50%; background:#c62828; vertical-align:middle; margin-right:6px;"></span> Не залито (${total - poured})</span>
-                    </div>`;
-            container.innerHTML = html;
-            document.getElementById('pilesModal').classList.add('active');
-        }
-
-        function excelDateToStr(excelDate) {
-            if (!excelDate || excelDate === 0) return '';
-            if (typeof excelDate === 'string') return excelDate;
-            const epoch = new Date(1899, 11, 30);
-            const d = new Date(epoch.getTime() + excelDate * 86400000);
-            if (d.getFullYear() < 1900) return '';
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            return `${day}.${month}.${year}`;
-        }
-
-        function parseWeuSheet(sheet, sheetName) {
-            const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (data.length < 6) return null;
-
-            let headerRowIndex = -1;
-            for (let i = 0; i < Math.min(data.length, 15); i++) {
-                const row = data[i];
-                const hasWeu = row.some(cell => String(cell).trim() === '№ВЭУ');
-                const hasPile = row.some(cell => String(cell).trim() === '№ сваи');
-                if (hasWeu && hasPile) {
-                    headerRowIndex = i;
-                    break;
-                }
-            }
-            if (headerRowIndex === -1) headerRowIndex = 5;
-            const headerRow = data[headerRowIndex] || [];
-            let idx = { weu: -1, pile: -1, proj: -1, date: -1, dkbs1: -1, vol1: -1, dkbs2: -1, vol2: -1, dkbs3: -1, vol3: -1, dkbs4: -1, vol4: -1,
-                        p7: -1, p14: -1, p28: -1, s7: -1, s14: -1, s28: -1 };
-            headerRow.forEach((cell, i) => {
-                const v = String(cell).trim();
-                if (v === '№ВЭУ') idx.weu = i;
-                else if (v === '№ сваи') idx.pile = i;
-                else if (v === 'м3 (проект)') idx.proj = i;
-                else if (v === 'Дата заливки') idx.date = i;
-                else if (v === 'ДКБС№' && idx.dkbs1 === -1) idx.dkbs1 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol1 === -1) idx.vol1 = i;
-                else if (v === 'ДКБС№' && idx.dkbs2 === -1) idx.dkbs2 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol2 === -1) idx.vol2 = i;
-                else if (v === 'ДКБС№' && idx.dkbs3 === -1) idx.dkbs3 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol3 === -1) idx.vol3 = i;
-                else if (v === 'ДКБС№' && idx.dkbs4 === -1) idx.dkbs4 = i;
-                else if (v === 'м3 (ДКБС)' && idx.vol4 === -1) idx.vol4 = i;
-                else if (v === '7 суток (Протокол)') idx.p7 = i;
-                else if (v === '14 суток (Протокол)') idx.p14 = i;
-                else if (v === '28 суток (Протокол)') idx.p28 = i;
-                else if (v === '7 суток (Протокол)<br>Статус') idx.s7 = i;
-                else if (v === '14 суток (Статус)') idx.s14 = i;
-                else if (v === '28 суток  (Протокол)<br>Статус') idx.s28 = i;
-            });
-            if (idx.pile === -1) idx.pile = 1;
-            if (idx.proj === -1) idx.proj = 2;
-            if (idx.date === -1) idx.date = 4;
-            if (idx.dkbs1 === -1) idx.dkbs1 = 5;
-            if (idx.vol1 === -1) idx.vol1 = 6;
-            if (idx.dkbs2 === -1) idx.dkbs2 = 7;
-            if (idx.vol2 === -1) idx.vol2 = 8;
-            if (idx.dkbs3 === -1) idx.dkbs3 = 9;
-            if (idx.vol3 === -1) idx.vol3 = 10;
-            if (idx.dkbs4 === -1) idx.dkbs4 = 11;
-            if (idx.vol4 === -1) idx.vol4 = 12;
-            if (idx.p7 === -1) idx.p7 = 15;
-            if (idx.p14 === -1) idx.p14 = 16;
-            if (idx.p28 === -1) idx.p28 = 17;
-            if (idx.s7 === -1) idx.s7 = 18;
-            if (idx.s14 === -1) idx.s14 = 19;
-            if (idx.s28 === -1) idx.s28 = 20;
-
-            const piles = [];
-            let weuNumber = '';
-            for (let r = headerRowIndex + 1; r < data.length; r++) {
-                const row = data[r];
-                const pileNum = row[idx.pile] !== undefined ? String(row[idx.pile]).trim() : '';
-                if (!pileNum) continue;
-                const projVal = parseFloat(row[idx.proj]) || 0;
-                const dateStr = excelDateToStr(row[idx.date]);
-                const dkbs = [
-                    { num: row[idx.dkbs1] || '', vol: parseFloat(row[idx.vol1]) || 0 },
-                    { num: row[idx.dkbs2] || '', vol: parseFloat(row[idx.vol2]) || 0 },
-                    { num: row[idx.dkbs3] || '', vol: parseFloat(row[idx.vol3]) || 0 },
-                    { num: row[idx.dkbs4] || '', vol: parseFloat(row[idx.vol4]) || 0 }
-                ].filter(d => d.num !== '' || d.vol !== 0);
-                const factVol = dkbs.reduce((sum, d) => sum + d.vol, 0);
-                const p7 = excelDateToStr(row[idx.p7]);
-                const p14 = excelDateToStr(row[idx.p14]);
-                const p28 = excelDateToStr(row[idx.p28]);
-                const s7 = String(row[idx.s7] || '').trim();
-                const s14 = String(row[idx.s14] || '').trim();
-                const s28 = String(row[idx.s28] || '').trim();
-
-                const weuFromA = row[idx.weu] ? String(row[idx.weu]).trim() : '';
-                if (weuFromA && weuFromA.startsWith('ВЭУ-')) weuNumber = weuFromA;
-
-                piles.push({
-                    num: pileNum,
-                    proj: projVal,
-                    date: dateStr,
-                    dkbs: dkbs,
-                    fact: factVol,
-                    p7, p14, p28, s7, s14, s28
-                });
-            }
-            if (piles.length === 0) return null;
-            if (!weuNumber) weuNumber = 'ВЭУ-' + sheetName;
-            return { weu: weuNumber, piles: piles };
-        }
-
-        function processWorkbook(workbook) {
-            const sheetNames = workbook.SheetNames;
-            const weuSheets = sheetNames.filter(name => /^[1-9]$|^1[0-8]$/.test(name)).sort((a,b) => Number(a)-Number(b));
-            if (weuSheets.length === 0) {
-                alert('Не найдены листы с номерами ВЭУ (1-18). Проверьте файл.');
-                return null;
-            }
-            const newData = [];
-            weuSheets.forEach(name => {
-                const sheet = workbook.Sheets[name];
-                const parsed = parseWeuSheet(sheet, name);
-                if (parsed) newData.push(parsed);
-            });
-            if (newData.length === 0) {
-                alert('Не удалось распарсить данные. Проверьте структуру файла.');
-                return null;
-            }
-            return newData;
-        }
-
-        function renderAll(allWeuData) {
-            let totalPoured = 0, totalPilesCount = 0;
-            let totalProjVol = 0, totalFactVol = 0;
-            let allDates = {};
-            let weuStats = [];
-            let weuVolumes = [];
-
-            let html = '';
-            allWeuData.forEach((weuObj) => {
-                const weu = weuObj.weu;
-                const piles = weuObj.piles;
-                let weuPoured = 0;
-                let weuProjVol = 0;
-                let weuFactVol = 0;
-                let rows = '';
-
-                const validPiles = piles.filter(p => p.num && p.num !== '');
-                const weuTotal = validPiles.length;
-
-                validPiles.forEach(p => {
-                    weuProjVol += p.proj;
-                    weuFactVol += p.fact;
-                    totalProjVol += p.proj;
-                    totalFactVol += p.fact;
-
-                    if (p.date && p.date !== '') {
-                        weuPoured++;
-                        totalPoured++;
-                    }
-                    totalPilesCount++;
-
-                    const diff = p.fact - p.proj;
-                    const diffStr = diff.toFixed(2);
-                    const diffClass = diff >= 0 ? 'diff-pos' : 'diff-neg';
-
-                    const dkbsStr = p.dkbs.map(d => d.num + ' ('+d.vol+')').join('; ');
-                    const dkbsBtn = `<button class="dkbs-btn" onclick="showDkbs('${weu}', ${p.num}, '${dkbsStr}')">📋</button>`;
-
-                    const dateDisplay = p.date || '—';
-
-                    function getStatusLabel(val) {
-                        if (val === '+') return 'На руках';
-                        return val || '—';
-                    }
-                    function getStatusClass(val) {
-                        if (val === '+') return 'status-onhand';
-                        return 'status-gray';
-                    }
-                    function getDateStatus(dateStr, statusVal) {
-                        if (!dateStr || dateStr === '') return 'status-gray';
-                        if (statusVal === '+') return 'status-onhand';
-                        const parts = dateStr.split('.');
-                        if (parts.length !== 3) return 'status-gray';
-                        const d = new Date(parts[2], parts[1]-1, parts[0]);
-                        if (d.getFullYear() < 1900) return 'status-gray';
-                        const now = new Date();
-                        now.setHours(0,0,0,0);
-                        const diffDays = Math.floor((d - now) / (86400000));
-                        if (diffDays < 0) return 'status-red';
-                        if (diffDays === 0) return 'status-orange';
-                        if (diffDays <= 3) return 'status-yellow';
-                        return 'status-gray';
-                    }
-
-                    const s7label = getStatusLabel(p.s7);
-                    const s14label = getStatusLabel(p.s14);
-                    const s28label = getStatusLabel(p.s28);
-                    const s7class = getStatusClass(p.s7);
-                    const s14class = getStatusClass(p.s14);
-                    const s28class = getStatusClass(p.s28);
-                    const p7class = getDateStatus(p.p7, p.s7);
-                    const p14class = getDateStatus(p.p14, p.s14);
-                    const p28class = getDateStatus(p.p28, p.s28);
-
-                    rows += `<tr>
-                        <td class="col-svia">${p.num}</td>
-                        <td class="col-proj">${p.proj.toFixed(2)}</td>
-                        <td class="date-cell">${dateDisplay}</td>
-                        <td class="col-fact">${p.fact.toFixed(2)}</td>
-                        <td class="col-diff ${diffClass}">${diffStr}</td>
-                        <td>${dkbsBtn}</td>
-                        <td class="date-cell"><span class="protocol-status ${p7class}">${p.p7 || '—'}</span></td>
-                        <td><span class="protocol-status ${s7class}">${s7label}</span></td>
-                        <td class="date-cell"><span class="protocol-status ${p14class}">${p.p14 || '—'}</span></td>
-                        <td><span class="protocol-status ${s14class}">${s14label}</span></td>
-                        <td class="date-cell"><span class="protocol-status ${p28class}">${p.p28 || '—'}</span></td>
-                        <td><span class="protocol-status ${s28class}">${s28label}</span></td>
-                    </tr>`;
-
-                    if (p.date && p.date !== '') {
-                        const dateKey = p.date;
-                        if (!allDates[dateKey]) allDates[dateKey] = [];
-                        allDates[dateKey].push({ weu: weu, pile: p.num });
-                    }
-                });
-
-                weuStats.push({ weu, total: weuTotal, poured: weuPoured });
-                weuVolumes.push({ weu, proj: weuProjVol, fact: weuFactVol });
-
-                html += `<div class="weu-accordion">
-                    <div class="weu-header" onclick="toggleWeu(this)">
-                        <span>${weu}</span>
-                        <span class="badge">Свай: ${weuPoured} / ${weuTotal}</span>
-                        <span class="arrow">▼</span>
-                    </div>
-                    <div class="weu-body">
-                        <div class="weu-table-wrap">
-                            <table>
-                                <thead><tr>
-                                    <th>№ сваи</th><th>Проект, м³</th><th>Дата заливки</th><th>Факт, м³</th><th>Разница</th><th>ДКБС</th>
-                                    <th>7 сут (дата)</th><th>7 сут (статус)</th><th>14 сут (дата)</th><th>14 сут (статус)</th><th>28 сут (дата)</th><th>28 сут (статус)</th>
-                                </tr></thead>
-                                <tbody>${rows}</tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>`;
-            });
-
-            document.getElementById('weuContainer').innerHTML = html;
-
-            document.getElementById('totalPoured').textContent = totalPoured;
-            document.getElementById('totalPiles').textContent = totalPilesCount;
-            const remaining = totalPilesCount - totalPoured;
-            document.getElementById('totalDiff').textContent = remaining;
-            document.getElementById('totalDiff').style.color = remaining > 0 ? '#e65100' : '#2e7d32';
-
-            const volDiff = totalFactVol - totalProjVol;
-            document.getElementById('volumesTotal').innerHTML = `
-                <div class="volumes-total-item">📐 Проектный объём: <strong class="proj">${totalProjVol.toFixed(2)}</strong> м³</div>
-                <div class="volumes-total-item">🧱 Фактический объём: <strong class="fact">${totalFactVol.toFixed(2)}</strong> м³</div>
-                <div class="volumes-total-item">📊 Разница: <strong class="diff">${volDiff.toFixed(2)}</strong> м³</div>
-            `;
-            let weuVolHtml = '';
-            weuVolumes.forEach(w => {
-                const diff = w.fact - w.proj;
-                const diffClass = diff >= 0 ? 'pos' : 'neg';
-                weuVolHtml += `<span class="volumes-weu-item">
-                    <span class="v-name">${w.weu}</span>:
-                    <span class="v-fact">${w.fact.toFixed(2)}</span> /
-                    <span class="v-proj">${w.proj.toFixed(2)}</span>
-                    <span class="v-diff ${diffClass}">(${diff >= 0 ? '+' : ''}${diff.toFixed(2)})</span>
-                </span>`;
-            });
-            document.getElementById('volumesWeu').innerHTML = weuVolHtml;
-
-            const sortedDates = Object.keys(allDates).sort((a,b) => {
-                const da = a.split('.').reverse().join('');
-                const db = b.split('.').reverse().join('');
-                return da.localeCompare(db);
-            });
-            let calHtml = '';
-            sortedDates.forEach(dateStr => {
-                const count = allDates[dateStr].length;
-                calHtml += `<div class="calendar-day" onclick="showCalendarDetails('${dateStr}', allDates)">
-                    <span class="date-label">${dateStr}</span>
-                    <span class="count">${count}</span>
-                </div>`;
-            });
-            document.getElementById('calendarGrid').innerHTML = calHtml || '<div style="color:#2e7d32;">Нет данных о заливках</div>';
-
-            let ringsHtml = '';
-            weuStats.forEach(stat => {
-                const percent = stat.total > 0 ? Math.round(stat.poured / stat.total * 100) : 0;
-                const color = percent === 100 ? '#2e7d32' : percent >= 50 ? '#f9a825' : '#ef6c00';
-                const rotation = percent / 100 * 360;
-                ringsHtml += `<div class="chart-ring-item" onclick="showPilesCircle('${stat.weu}', allWeuData)">
-                    <div class="ring" style="background: conic-gradient(${color} 0deg ${rotation}deg, #e8e8e8 ${rotation}deg 360deg);">
-                        <div class="ring-inner">${percent}%</div>
-                    </div>
-                    <div class="ring-label">${stat.weu}</div>
-                    <div class="ring-value">${stat.poured}/${stat.total}</div>
-                </div>`;
-            });
-            document.getElementById('chartRings').innerHTML = ringsHtml;
-
-            window.allWeuData = allWeuData;
-            window.allDates = allDates;
-        }
-
-        window.showCalendarDetails = function(dateStr, allDates) {
-            const details = allDates[dateStr] || [];
-            let bodyHtml = `<p style="font-size:1.1rem; margin-bottom:10px;"><strong>📅 ${dateStr}</strong></p>`;
-            if (details.length === 0) {
-                bodyHtml += '<p>Нет данных</p>';
-            } else {
-                const grouped = {};
-                details.forEach(item => {
-                    if (!grouped[item.weu]) grouped[item.weu] = [];
-                    grouped[item.weu].push(item.pile);
-                });
-                bodyHtml += '<ul style="list-style:none; padding:0;">';
-                for (const [weu, piles] of Object.entries(grouped)) {
-                    const pilesStr = piles.join(', ');
-                    bodyHtml += `<li style="padding:4px 0; border-bottom:1px solid rgba(200,230,201,0.5);">
-                        <strong style="color:#1b5e20;">${weu}</strong>: ${piles.length} свай
-                        <span style="color:#555; font-size:0.85rem; display:block; padding-left:10px;">№${pilesStr}</span>
-                    </li>`;
-                }
-                bodyHtml += '</ul>';
-            }
-            document.getElementById('calModalTitle').textContent = '📅 Детали заливок';
-            document.getElementById('calModalBody').innerHTML = bodyHtml;
-            document.getElementById('calendarModal').classList.add('active');
-        };
-
-        window.showDkbs = function(weu, pileNum, dkbsStr) {
-            document.getElementById('modalTitle').textContent = `${weu} — Свая ${pileNum}`;
-            const items = dkbsStr.split('; ').filter(s => s);
-            document.getElementById('dkbsList').innerHTML = items.map(item => `<li>${item}</li>`).join('') || '<li>Нет данных</li>';
-            document.getElementById('dkbsModal').classList.add('active');
-        };
-
-        // ==== Обработчики загрузки ====
-        function handleFile(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const allWeuData = processWorkbook(workbook);
-                if (allWeuData) {
-                    renderAll(allWeuData);
-                    document.getElementById('dataSourceIndicator').textContent = 'Источник: вручную загруженный файл';
-                    document.getElementById('dropArea').style.display = 'none';
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
-        // Получаем элементы
-        const dropArea = document.getElementById('dropArea');
-        const fileInput = document.getElementById('fileInput');
-        const summary = document.getElementById('summary');
-
-        // События
-        dropArea.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            this.classList.add('dragover');
-        });
-        dropArea.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-        });
-        dropArea.addEventListener('drop', function(e) {
-            e.preventDefault();
-            this.classList.remove('dragover');
-            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        });
-        fileInput.addEventListener('change', function(e) {
-            if (this.files.length > 0) handleFile(this.files[0]);
-            this.value = '';
-        });
-        dropArea.addEventListener('click', function() {
-            fileInput.click();
-        });
-
-        // ==== Автоматическая загрузка с сервера ====
-        async function tryFetchAndLoad() {
-            try {
-                const response = await fetch('data.xlsx?t=' + Date.now());
-                if (!response.ok) throw new Error('Файл не найден (статус ' + response.status + ')');
-                const data = await response.arrayBuffer();
-                const workbook = XLSX.read(data, { type: 'array' });
-                const allWeuData = processWorkbook(workbook);
-                if (allWeuData) {
-                    renderAll(allWeuData);
-                    document.getElementById('dataSourceIndicator').textContent = 'Источник: data.xlsx (с сервера)';
+                if (ok) {
+                    console.log('Данные успешно загружены из data.xlsx');
                 } else {
-                    document.getElementById('dataSourceIndicator').textContent = 'Ошибка парсинга, загрузите вручную';
-                    showManualUploadMessage();
+                    if (!loadFromStorage()) {
+                        alert('Не удалось загрузить данные. Пожалуйста, выберите файл вручную.');
+                    }
                 }
-            } catch (err) {
+            })
+            .catch(err => {
                 console.warn('Не удалось загрузить data.xlsx:', err.message);
-                document.getElementById('dataSourceIndicator').textContent = 'Файл не найден, загрузите вручную';
-                showManualUploadMessage();
-            }
+                if (!loadFromStorage()) {
+                    document.getElementById('summary').innerHTML =
+                        document.getElementById('summary').innerHTML +
+                        '<div style="color:#c62828; padding:10px; width:100%; text-align:center;">⚠️ Не удалось загрузить data.xlsx. Пожалуйста, выберите файл вручную.</div>';
+                    setTimeout(() => {
+                        fileInput.click();
+                    }, 500);
+                }
+            });
+    }
+
+    // ==================== Старт ====================
+    window.addEventListener('load', function() {
+        tryFetchAndLoad();
+    });
+
+    setInterval(function() {
+        const now = new Date();
+        if (now.getHours() === 9 && now.getMinutes() === 30) {
+            location.reload();
         }
+    }, 60000);
 
-        function showManualUploadMessage() {
-            if (!document.getElementById('manualUploadMsg')) {
-                const msg = document.createElement('div');
-                msg.id = 'manualUploadMsg';
-                msg.style.cssText = 'color:#f9a825; padding:5px; font-size:0.9rem; width:100%; text-align:center;';
-                msg.textContent = '💡 Для загрузки данных перетащите Excel-файл в область выше или кликните на неё.';
-                summary.appendChild(msg);
-            }
-        }
-
-        // ==== Запуск ====
-        window.addEventListener('load', function() {
-            tryFetchAndLoad();
-        });
-
-        setInterval(function() {
-            const now = new Date();
-            if (now.getHours() === 9 && now.getMinutes() === 30) {
-                location.reload();
-            }
-        }, 60000);
-
-        console.log('Майская ВЭС — сайт загружен.');
-    })();
+    console.log('Майская ВЭС — сайт загружен. Парсинг подбетонки и ростверка использует прямые индексы столбцов (O,P,Q,R,S,T).');
 </script>
 </body>
 </html>
